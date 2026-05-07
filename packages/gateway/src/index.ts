@@ -11,9 +11,36 @@ import { listFilings, resolveCompany, UpstreamError } from "@agentpay/company-in
 const PORT = Number(process.env.PORT ?? 3000);
 const PLACEHOLDER_PAY_TO = "0x0000000000000000000000000000000000000001";
 const PAY_TO_ADDRESS = process.env.PAY_TO_ADDRESS ?? PLACEHOLDER_PAY_TO;
-const FACILITATOR_URL = process.env.FACILITATOR_URL ?? "https://x402.org/facilitator";
-const NETWORK = "eip155:84532";
-const USDC_BASE_SEPOLIA = "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
+
+type NetworkProfile = "base-mainnet" | "base-sepolia";
+const NETWORK_PROFILES: Record<
+  NetworkProfile,
+  { network: string; usdc: string; facilitator: string; label: string }
+> = {
+  "base-mainnet": {
+    network: "eip155:8453",
+    usdc: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    facilitator: "https://facilitator.payai.network",
+    label: "Base mainnet",
+  },
+  "base-sepolia": {
+    network: "eip155:84532",
+    usdc: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    facilitator: "https://x402.org/facilitator",
+    label: "Base Sepolia",
+  },
+};
+const PROFILE = (process.env.NETWORK_PROFILE as NetworkProfile) ?? "base-mainnet";
+if (!(PROFILE in NETWORK_PROFILES)) {
+  throw new Error(
+    `Unknown NETWORK_PROFILE "${PROFILE}". Use "base-mainnet" or "base-sepolia".`,
+  );
+}
+const PROFILE_CFG = NETWORK_PROFILES[PROFILE];
+const NETWORK = PROFILE_CFG.network;
+const USDC_ASSET = PROFILE_CFG.usdc;
+const FACILITATOR_URL = process.env.FACILITATOR_URL ?? PROFILE_CFG.facilitator;
+
 const REPO_ROOT = path.resolve(import.meta.dirname, "../../..");
 const DB_PATH = process.env.DB_PATH ?? path.resolve(REPO_ROOT, "agentpay.sqlite");
 const GATEWAY_URL = process.env.GATEWAY_URL ?? `http://localhost:${PORT}`;
@@ -70,7 +97,7 @@ for (const r of ROUTES) {
     method: r.method,
     resource: r.resource,
     priceAtomic: r.priceAtomic,
-    asset: USDC_BASE_SEPOLIA,
+    asset: USDC_ASSET,
     network: NETWORK,
     payTo: PAY_TO_ADDRESS,
     gatewayUrl: GATEWAY_URL,
@@ -138,7 +165,7 @@ app.use((req, res, next) => {
         status,
         payerAddress,
         payTo: PAY_TO_ADDRESS,
-        asset: USDC_BASE_SEPOLIA,
+        asset: USDC_ASSET,
         network: NETWORK,
         amountAtomic,
         txHash,
@@ -226,9 +253,11 @@ function upstreamFailure(res: Response, err: unknown) {
 
 app.listen(PORT, () => {
   console.log(`[gateway] listening on http://localhost:${PORT}`);
+  console.log(`[gateway] profile:     ${PROFILE} (${PROFILE_CFG.label})`);
   console.log(`[gateway] facilitator: ${FACILITATOR_URL}`);
+  console.log(`[gateway] usdc:        ${USDC_ASSET}`);
+  console.log(`[gateway] network:     ${NETWORK}`);
   console.log(`[gateway] payTo:       ${PAY_TO_ADDRESS}`);
-  console.log(`[gateway] network:     ${NETWORK} (Base Sepolia)`);
   console.log(`[gateway] db:          ${DB_PATH}`);
   console.log(`[gateway] routes:`);
   for (const r of ROUTES) {
