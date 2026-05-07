@@ -1,0 +1,19 @@
+{
+  "name": "@agentpay/research-agent-example",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Demo agent that calls the gateway via @agentpay/sdk on Base Sepolia.",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@agentpay/sdk": "*",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "tsx": "^4.19.2"
+  }
+}

@@ -26,6 +26,12 @@ const resourceServer = new x402ResourceServer(facilitatorClient).register(
 
 const app = express();
 
+app.use((req, _res, next) => {
+  const sig = req.headers["x-payment"] ?? req.headers["payment-signature"];
+  console.log(`[gateway] ${req.method} ${req.url} ${sig ? "(signed)" : "(unsigned)"}`);
+  next();
+});
+
 app.use(
   paymentMiddleware(
     {

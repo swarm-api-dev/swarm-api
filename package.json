@@ -5,7 +5,8 @@
   "description": "x402 monetization gateway, SDK, dashboard, and marketplace.",
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "examples/*"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
