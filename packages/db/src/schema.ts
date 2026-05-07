@@ -22,5 +22,22 @@ export const payments = sqliteTable(
   }),
 );
 
+export const endpoints = sqliteTable("endpoints", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  method: text("method").notNull(),
+  resource: text("resource").notNull(),
+  priceAtomic: text("price_atomic").notNull(),
+  asset: text("asset").notNull(),
+  network: text("network").notNull(),
+  payTo: text("pay_to").notNull(),
+  gatewayUrl: text("gateway_url").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+});
+
 export type Payment = typeof payments.$inferSelect;
 export type NewPayment = typeof payments.$inferInsert;
+export type Endpoint = typeof endpoints.$inferSelect;
+export type NewEndpoint = typeof endpoints.$inferInsert;

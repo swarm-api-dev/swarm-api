@@ -5,7 +5,7 @@ import express, { type Request, type Response } from "express";
 import { paymentMiddleware, x402ResourceServer } from "@x402/express";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { HTTPFacilitatorClient } from "@x402/core/server";
-import { createDb, ensureSchema, payments } from "@agentpay/db";
+import { createDb, ensureSchema, payments, upsertEndpoint } from "@agentpay/db";
 
 const PORT = Number(process.env.PORT ?? 3000);
 const PLACEHOLDER_PAY_TO = "0x0000000000000000000000000000000000000001";
@@ -26,6 +26,19 @@ if (PAY_TO_ADDRESS === PLACEHOLDER_PAY_TO) {
 
 const db = createDb(DB_PATH);
 ensureSchema(db);
+
+upsertEndpoint(db, {
+  id: "api-example",
+  name: "Example paid API",
+  description: "Demo endpoint that returns a JSON message after a $0.001 USDC payment.",
+  method: "GET",
+  resource: "/api/example",
+  priceAtomic: "1000",
+  asset: USDC_BASE_SEPOLIA,
+  network: NETWORK,
+  payTo: PAY_TO_ADDRESS,
+  gatewayUrl: `http://localhost:${PORT}`,
+});
 
 const facilitatorClient = new HTTPFacilitatorClient({ url: FACILITATOR_URL });
 const resourceServer = new x402ResourceServer(facilitatorClient).register(
