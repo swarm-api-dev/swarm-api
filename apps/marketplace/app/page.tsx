@@ -42,8 +42,10 @@ export default async function MarketplacePage() {
 
   return (
     <main>
-      <h1>AgentPay marketplace</h1>
-      <p className="subtitle">Paid APIs for AI agents. Pay per call in USDC, no API keys.</p>
+      <h1>AgentPay API catalog</h1>
+      <p className="subtitle">
+        Company intelligence for AI agents. Pay per call in USDC, no keys, no signups.
+      </p>
 
       {list.length === 0 ? (
         <div className="empty">No endpoints registered yet. Start the gateway to seed the catalog.</div>

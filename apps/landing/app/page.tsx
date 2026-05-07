@@ -74,23 +74,25 @@ export default async function LandingPage() {
 
       <section className="hero">
         <div className="container">
-          <span className="eyebrow">Built on x402 · Base Sepolia</span>
+          <span className="eyebrow">Built on x402 · Base · USDC</span>
           <h1 className="hero-title">
-            Monetize your API for <span className="accent">AI agents</span> in one hour.
+            Company intelligence, packaged for{" "}
+            <span className="accent">AI agents</span>.
           </h1>
           <p className="hero-subtitle">
-            Add x402 payment gating with one line of middleware. Charge per request in USDC. No API
-            keys, no subscriptions, no chargebacks — just signed HTTP requests that pay themselves.
+            SEC filings parsed to JSON, recent news indexed, hiring signals from public ATS boards.
+            Fresh, structured, queryable in one HTTP call. Pay per call in USDC — no keys, no
+            signups, no contracts.
           </p>
           <div className="cta-row">
             <a href={MARKETPLACE_URL} className="btn btn-primary">
-              Browse the marketplace →
+              Browse the API catalog →
             </a>
             <a href={DASHBOARD_URL} className="btn">
-              Open dashboard
+              Live usage
             </a>
             <a href={WHITEPAPER_URL} target="_blank" rel="noreferrer" className="btn">
-              Read the whitepaper
+              x402 whitepaper
             </a>
           </div>
         </div>
@@ -125,35 +127,37 @@ export default async function LandingPage() {
 
       <section className="block">
         <div className="container">
-          <div className="section-eyebrow">Why x402</div>
-          <h2 className="section-title">Designed for machines, not checkout flows.</h2>
+          <div className="section-eyebrow">Why agents pay for this</div>
+          <h2 className="section-title">The data your agent needs after the training cutoff.</h2>
           <p className="section-lede">
-            HTTP 402 has been reserved for "payment required" since 1992. x402 finally puts it to
-            work — letting servers price each request and clients pay automatically with stablecoins.
+            LLMs already know last year's facts. Agents fail on this quarter's filings, this week's
+            news, today's job postings. AgentPay packages public sources into one HTTP surface so
+            that gap closes in a single paid call.
           </p>
           <div className="why-grid">
             <div className="why-card">
-              <div className="icon">⚡</div>
-              <h3>Instant settlement</h3>
+              <div className="icon">⏱</div>
+              <h3>Fresh past the cutoff</h3>
               <p>
-                Payments finalize on Base in roughly 200 milliseconds. No batch windows, no rolling
-                chargebacks, no waiting on a payment processor.
+                SEC filings within minutes of EDGAR publication. News indexed every 15 minutes.
+                Job boards refreshed hourly. The agent never has to ask "is this still current?"
+              </p>
+            </div>
+            <div className="why-card">
+              <div className="icon">{`{ }`}</div>
+              <h3>Structured for agents</h3>
+              <p>
+                10-K sections as JSON keys. News with extracted entities and sentiment. Job
+                postings with parsed seniority and stack. Built for tool-calling, not for humans
+                with a browser.
               </p>
             </div>
             <div className="why-card">
               <div className="icon">¢</div>
-              <h3>Per-request pricing</h3>
+              <h3>Pay only for what you read</h3>
               <p>
-                Stablecoin gas fees under a tenth of a cent unlock real micropayments. Charge $0.001
-                per call, $0.005 per inference, $0.10 per document.
-              </p>
-            </div>
-            <div className="why-card">
-              <div className="icon">🤖</div>
-              <h3>Machine-native</h3>
-              <p>
-                No accounts, no API keys, no human approval steps. An autonomous agent finds your
-                endpoint, signs a USDC authorization, and gets a response — all in one HTTP retry.
+                Per-call pricing from $0.002 to $0.05 in USDC. A full company due-diligence pass
+                runs about $0.10. Crunchbase charges $20k a year for less.
               </p>
             </div>
           </div>
@@ -170,9 +174,9 @@ export default async function LandingPage() {
           <div className="flow">
             <div className="flow-step">
               <div className="num">1</div>
-              <h3>Agent makes a request</h3>
-              <p>Standard HTTP GET against your monetized endpoint.</p>
-              <code>GET /api/example</code>
+              <h3>Agent asks a question</h3>
+              <p>Plain HTTP request to a company-intelligence endpoint.</p>
+              <code>GET /v1/companies/filings?id=AAPL</code>
             </div>
             <div className="flow-step">
               <div className="num">2</div>
@@ -183,8 +187,8 @@ export default async function LandingPage() {
             <div className="flow-step">
               <div className="num">3</div>
               <h3>Agent signs & retries</h3>
-              <p>SDK signs an EIP-3009 USDC transfer authorization and retries with one header.</p>
-              <code>200 OK + receipt</code>
+              <p>SDK signs an EIP-3009 USDC authorization, retries with one header, gets data.</p>
+              <code>200 OK + structured JSON</code>
             </div>
           </div>
         </div>
@@ -192,51 +196,56 @@ export default async function LandingPage() {
 
       <section className="block">
         <div className="container">
-          <div className="section-eyebrow">Two sides</div>
-          <h2 className="section-title">Built for both ends of the wire.</h2>
+          <div className="section-eyebrow">Behind the API</div>
+          <h2 className="section-title">Public sources, agent-shaped.</h2>
           <p className="section-lede">
-            AgentPay packages the x402 protocol with a payment-event database, an operator
-            dashboard, and an agent-discoverable marketplace.
+            We aggregate public, freely-licensed primary sources and ship them as structured JSON
+            over a single x402 surface. No sublicensing tricks, no scraping behind paywalls — just
+            engineering work to make data agents can actually use.
           </p>
           <div className="audiences">
             <article className="audience">
-              <span className="tag tag-providers">For API providers</span>
-              <h3>Add a price tag, get paid in USDC.</h3>
+              <span className="tag tag-providers">SEC EDGAR</span>
+              <h3>Filings, parsed.</h3>
               <p>
-                One middleware call gates an endpoint. Configure price, network, and payout address;
-                AgentPay records every paid call and surfaces revenue on the dashboard.
+                10-K, 10-Q, 8-K, S-1, Form 4. EDGAR's APIs are free and comprehensive but
+                XBRL-shaped. We resolve tickers, list filings by type and date, and return key
+                sections as structured JSON.
               </p>
               <ul>
-                <li>Drop-in Express middleware on Base Sepolia or mainnet</li>
-                <li>Per-request pricing in USDC, no credit-card stack to maintain</li>
-                <li>Live dashboard: revenue, settled vs failed, success rate</li>
-                <li>Listings auto-published to the marketplace</li>
+                <li>Resolve "AAPL" → CIK + canonical company record</li>
+                <li>List recent filings filtered by form type and date</li>
+                <li>Extract sections from a 10-K — risk factors, MD&A, financials</li>
+                <li>Insider transactions decoded from raw Form 4</li>
               </ul>
               <pre className="code">
-                <span className="k">app</span>.use(
-                {"\n  "}
-                <span className="f">paymentMiddleware</span>(<span className="n">routes</span>,{" "}
-                <span className="n">resourceServer</span>),{"\n"});
+                <span className="k">await</span> fetch({"\n  "}
+                <span className="s">
+                  &quot;https://api.agentpay/v1/companies/filings?id=AAPL&types=10-K,8-K&quot;
+                </span>
+                {"\n});"}
               </pre>
             </article>
             <article className="audience">
-              <span className="tag tag-agents">For AI agents</span>
-              <h3>Pay for tools your agent actually uses.</h3>
+              <span className="tag tag-agents">News + hiring signals</span>
+              <h3>Fresh signals on every company.</h3>
               <p>
-                Drop in <code>@agentpay/sdk</code>, hand it a wallet and a budget cap. It handles
-                the 402 → sign → retry loop and refuses anything over your spend limit.
+                GDELT 2.0 indexes essentially every news article published worldwide every 15
+                minutes. Greenhouse and Lever expose every public job board as a clean JSON API.
+                We query both per-company so the agent gets one structured answer.
               </p>
               <ul>
-                <li>fetch-compatible client, no integration work in your loop</li>
-                <li>Per-request budget cap throws BudgetExceededError on overrun</li>
-                <li>Spend logs flow into the same dashboard</li>
-                <li>Browse paid APIs in the marketplace, copy a snippet, run</li>
+                <li>Recent news with extracted entities, themes, and tone</li>
+                <li>Open job postings with parsed roles and locations</li>
+                <li>Hiring trend over the last 30 / 90 / 365 days</li>
+                <li>De-duplication across syndicated articles</li>
               </ul>
               <pre className="code">
                 <span className="k">const</span> fetch = <span className="f">createAgentClient</span>(
                 {"{\n  "}
                 <span className="n">privateKey</span>: process.env.AGENT_PRIVATE_KEY,{"\n  "}
-                <span className="n">maxSpendPerRequest</span>: <span className="s">10000n</span>,
+                <span className="n">maxSpendPerRequest</span>: <span className="s">50000n</span>,{" "}
+                <span className="c">// $0.05 cap</span>
                 {"\n});"}
               </pre>
             </article>
@@ -247,27 +256,28 @@ export default async function LandingPage() {
       <section className="block">
         <div className="container">
           <div className="quickstart">
-            <h2>Run the whole stack locally.</h2>
+            <h2>Plug into your agent in five lines.</h2>
             <p>
-              Gateway, SDK, payment DB, dashboard, and marketplace — same monorepo, one install.
+              Hand the SDK a Base wallet and a budget cap. Every paid HTTP call resolves through
+              the same client.
             </p>
             <div className="commands">
               <div>
-                <span className="prompt">$</span>git clone agentpay && cd agentpay
+                <span className="prompt">$</span>npm i @agentpay/sdk
               </div>
               <div>
-                <span className="prompt">$</span>npm install
+                <span className="prompt">$</span>export AGENT_PRIVATE_KEY=0x...
               </div>
               <div>
-                <span className="prompt">$</span>npm run dev -w @agentpay/gateway
-              </div>
-              <div>
-                <span className="prompt">$</span>npm run dev -w @agentpay/dashboard
+                <span className="prompt">$</span>node -e &quot;
+                <span style={{ color: "var(--purple)" }}>const</span> {"{ createAgentClient }"} ={" "}
+                <span style={{ color: "var(--purple)" }}>require</span>(&apos;@agentpay/sdk&apos;);
+                &quot;
               </div>
             </div>
             <div className="cta-row">
               <a href={MARKETPLACE_URL} className="btn btn-primary">
-                See the marketplace
+                See the API catalog
               </a>
               <a href={X402_REPO_URL} target="_blank" rel="noreferrer" className="btn">
                 x402-foundation on GitHub
