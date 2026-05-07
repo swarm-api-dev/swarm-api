@@ -9,8 +9,11 @@ import { createDb, ensureSchema, payments, upsertEndpoint } from "@agentpay/db";
 import {
   extractFiling,
   listFilings,
+  listJobs,
+  listNews,
   resolveCompany,
   UpstreamError,
+  type AtsProvider,
 } from "@agentpay/company-intel";
 
 const PORT = Number(process.env.PORT ?? 3000);
@@ -101,6 +104,26 @@ const ROUTES: RouteSpec[] = [
     name: "Extract filing items",
     description:
       "Parse a 10-K, 10-Q, or 8-K from EDGAR into structured per-Item JSON. Pass an accession (e.g. 0000320193-26-000011) and optionally items=1A,7,7A to filter.",
+  },
+  {
+    id: "companies-news",
+    method: "GET",
+    resource: "/v1/companies/news",
+    priceAtomic: "20000",
+    priceLabel: "$0.02",
+    name: "Recent news",
+    description:
+      "Recent news mentions of a company indexed by GDELT 2.0. Pass company=<name>, optional since/until (YYYY-MM-DD), language (default english), limit (default 25, max 75).",
+  },
+  {
+    id: "companies-jobs",
+    method: "GET",
+    resource: "/v1/companies/jobs",
+    priceAtomic: "10000",
+    priceLabel: "$0.01",
+    name: "Open jobs",
+    description:
+      "Open job postings from a company's public Greenhouse or Lever board. Pass company=<name> for auto-discovery, or ats=greenhouse|lever&slug=<slug> for explicit lookup.",
   },
 ];
 
@@ -247,6 +270,42 @@ app.get("/v1/companies/filings", async (req: Request, res: Response) => {
 
   try {
     const result = await listFilings(db, id, { types, since, limit });
+    return res.json(result);
+  } catch (err) {
+    return upstreamFailure(res, err);
+  }
+});
+
+app.get("/v1/companies/news", async (req: Request, res: Response) => {
+  const company = typeof req.query.company === "string" ? req.query.company.trim() : "";
+  if (!company) {
+    return res.status(400).json({ error: "Provide ?company=<name>." });
+  }
+  const since = typeof req.query.since === "string" ? req.query.since : undefined;
+  const until = typeof req.query.until === "string" ? req.query.until : undefined;
+  const language = typeof req.query.language === "string" ? req.query.language : undefined;
+  const limit = typeof req.query.limit === "string" ? Number(req.query.limit) : undefined;
+  try {
+    const result = await listNews(db, company, { since, until, language, limit });
+    return res.json(result);
+  } catch (err) {
+    return upstreamFailure(res, err);
+  }
+});
+
+app.get("/v1/companies/jobs", async (req: Request, res: Response) => {
+  const company = typeof req.query.company === "string" ? req.query.company.trim() : "";
+  if (!company) {
+    return res.status(400).json({ error: "Provide ?company=<name> (or ats=greenhouse|lever&slug=<slug>)." });
+  }
+  const limit = typeof req.query.limit === "string" ? Number(req.query.limit) : undefined;
+  const ats =
+    req.query.ats === "greenhouse" || req.query.ats === "lever"
+      ? (req.query.ats as AtsProvider)
+      : undefined;
+  const slug = typeof req.query.slug === "string" ? req.query.slug : undefined;
+  try {
+    const result = await listJobs(db, company, { ats, slug, limit });
     return res.json(result);
   } catch (err) {
     return upstreamFailure(res, err);

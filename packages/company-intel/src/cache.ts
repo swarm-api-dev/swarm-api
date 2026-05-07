@@ -51,15 +51,28 @@ export async function fetchTextCached(
 }
 
 async function upstreamFetch(url: string, init?: RequestInit): Promise<Response> {
-  const res = await fetch(url, init);
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new UpstreamError(
-      `Upstream ${res.status} ${res.statusText} for ${url}${body ? `: ${body.slice(0, 200)}` : ""}`,
-      res.status,
-    );
+  const controller = new AbortController();
+  const timeoutMs = 30_000;
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { ...init, signal: controller.signal });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new UpstreamError(
+        `Upstream ${res.status} ${res.statusText} for ${url}${body ? `: ${body.slice(0, 200)}` : ""}`,
+        res.status,
+      );
+    }
+    return res;
+  } catch (err) {
+    if (err instanceof UpstreamError) throw err;
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new UpstreamError(`Upstream timeout after ${timeoutMs}ms for ${url}`, 504);
+    }
+    throw new UpstreamError(`Upstream fetch failed for ${url}: ${(err as Error).message}`, 502);
+  } finally {
+    clearTimeout(timer);
   }
-  return res;
 }
 
 export class UpstreamError extends Error {

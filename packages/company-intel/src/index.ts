@@ -11,4 +11,15 @@ export type {
   ExtractedItem,
 } from "./extract";
 
+export { listNews } from "./news";
+export type { NewsArticle, ListNewsOptions, ListNewsResponse } from "./news";
+
+export { listJobs } from "./jobs";
+export type {
+  AtsProvider,
+  JobPosting,
+  ListJobsOptions,
+  ListJobsResponse,
+} from "./jobs";
+
 export { UpstreamError } from "./cache";
