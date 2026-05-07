@@ -22,6 +22,12 @@ export const payments = sqliteTable(
   }),
 );
 
+export const cache = sqliteTable("cache", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+});
+
 export const endpoints = sqliteTable("endpoints", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -41,3 +47,4 @@ export type Payment = typeof payments.$inferSelect;
 export type NewPayment = typeof payments.$inferInsert;
 export type Endpoint = typeof endpoints.$inferSelect;
 export type NewEndpoint = typeof endpoints.$inferInsert;
+export type CacheRow = typeof cache.$inferSelect;

@@ -33,6 +33,13 @@ export function ensureSchema(db: DB) {
     CREATE INDEX IF NOT EXISTS payments_status_idx ON payments(status);
     CREATE INDEX IF NOT EXISTS payments_created_at_idx ON payments(created_at);
 
+    CREATE TABLE IF NOT EXISTS cache (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      expires_at INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS cache_expires_at_idx ON cache(expires_at);
+
     CREATE TABLE IF NOT EXISTS endpoints (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,

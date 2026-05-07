@@ -4,8 +4,9 @@ import path from "node:path";
 import express, { type Request, type Response } from "express";
 import { paymentMiddleware, x402ResourceServer } from "@x402/express";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
-import { HTTPFacilitatorClient } from "@x402/core/server";
+import { HTTPFacilitatorClient, type RoutesConfig } from "@x402/core/server";
 import { createDb, ensureSchema, payments, upsertEndpoint } from "@agentpay/db";
+import { listFilings, resolveCompany, UpstreamError } from "@agentpay/company-intel";
 
 const PORT = Number(process.env.PORT ?? 3000);
 const PLACEHOLDER_PAY_TO = "0x0000000000000000000000000000000000000001";
@@ -15,6 +16,7 @@ const NETWORK = "eip155:84532";
 const USDC_BASE_SEPOLIA = "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
 const REPO_ROOT = path.resolve(import.meta.dirname, "../../..");
 const DB_PATH = process.env.DB_PATH ?? path.resolve(REPO_ROOT, "agentpay.sqlite");
+const GATEWAY_URL = process.env.GATEWAY_URL ?? `http://localhost:${PORT}`;
 
 if (PAY_TO_ADDRESS === PLACEHOLDER_PAY_TO) {
   console.warn(
@@ -27,18 +29,53 @@ if (PAY_TO_ADDRESS === PLACEHOLDER_PAY_TO) {
 const db = createDb(DB_PATH);
 ensureSchema(db);
 
-upsertEndpoint(db, {
-  id: "api-example",
-  name: "Example paid API",
-  description: "Demo endpoint that returns a JSON message after a $0.001 USDC payment.",
-  method: "GET",
-  resource: "/api/example",
-  priceAtomic: "1000",
-  asset: USDC_BASE_SEPOLIA,
-  network: NETWORK,
-  payTo: PAY_TO_ADDRESS,
-  gatewayUrl: `http://localhost:${PORT}`,
-});
+interface RouteSpec {
+  id: string;
+  method: "GET" | "POST";
+  resource: string;
+  priceAtomic: string;
+  priceLabel: string;
+  name: string;
+  description: string;
+}
+
+const ROUTES: RouteSpec[] = [
+  {
+    id: "companies-resolve",
+    method: "POST",
+    resource: "/v1/companies/resolve",
+    priceAtomic: "2000",
+    priceLabel: "$0.002",
+    name: "Resolve company",
+    description:
+      "Resolve a free-form query (ticker, CIK, or company name) to canonical SEC records. Returns up to 5 ranked matches.",
+  },
+  {
+    id: "companies-filings",
+    method: "GET",
+    resource: "/v1/companies/filings",
+    priceAtomic: "5000",
+    priceLabel: "$0.005",
+    name: "List SEC filings",
+    description:
+      "List recent SEC filings (10-K, 10-Q, 8-K, S-1, Form 4, etc.) for a CIK with optional type filter and date floor.",
+  },
+];
+
+for (const r of ROUTES) {
+  upsertEndpoint(db, {
+    id: r.id,
+    name: r.name,
+    description: r.description,
+    method: r.method,
+    resource: r.resource,
+    priceAtomic: r.priceAtomic,
+    asset: USDC_BASE_SEPOLIA,
+    network: NETWORK,
+    payTo: PAY_TO_ADDRESS,
+    gatewayUrl: GATEWAY_URL,
+  });
+}
 
 const facilitatorClient = new HTTPFacilitatorClient({ url: FACILITATOR_URL });
 const resourceServer = new x402ResourceServer(facilitatorClient).register(
@@ -114,36 +151,78 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(
-  paymentMiddleware(
-    {
-      "GET /api/example": {
-        accepts: [
-          {
-            scheme: "exact",
-            price: "$0.001",
-            network: NETWORK,
-            payTo: PAY_TO_ADDRESS,
-          },
-        ],
-        description: "Example paid endpoint (slice 2 stub).",
-        mimeType: "application/json",
-      },
-    },
-    resourceServer,
-  ),
-);
+app.use(express.json({ limit: "32kb" }));
 
-app.get("/api/example", (_req: Request, res: Response) => {
-  res.json({
-    message: "Paid response. This payload is gated by x402.",
-    timestamp: new Date().toISOString(),
-  });
+const paidRoutes: RoutesConfig = Object.fromEntries(
+  ROUTES.map((r) => [
+    `${r.method} ${r.resource}`,
+    {
+      accepts: [
+        {
+          scheme: "exact" as const,
+          price: r.priceLabel,
+          network: NETWORK,
+          payTo: PAY_TO_ADDRESS,
+        },
+      ],
+      description: r.description,
+      mimeType: "application/json",
+    },
+  ]),
+) as RoutesConfig;
+
+app.use(paymentMiddleware(paidRoutes, resourceServer));
+
+app.post("/v1/companies/resolve", async (req: Request, res: Response) => {
+  const query = typeof req.body?.query === "string" ? req.body.query : null;
+  if (!query) {
+    return res.status(400).json({ error: "Provide { query: string } in the request body." });
+  }
+  try {
+    const result = await resolveCompany(db, query);
+    return res.json(result);
+  } catch (err) {
+    return upstreamFailure(res, err);
+  }
+});
+
+app.get("/v1/companies/filings", async (req: Request, res: Response) => {
+  const id = typeof req.query.id === "string" ? req.query.id : null;
+  if (!id) {
+    return res
+      .status(400)
+      .json({ error: "Provide ?id=<CIK> (10-digit zero-padded SEC CIK)." });
+  }
+  const types =
+    typeof req.query.types === "string"
+      ? req.query.types
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean)
+      : undefined;
+  const since = typeof req.query.since === "string" ? req.query.since : undefined;
+  const limit = typeof req.query.limit === "string" ? Number(req.query.limit) : undefined;
+
+  try {
+    const result = await listFilings(db, id, { types, since, limit });
+    return res.json(result);
+  } catch (err) {
+    return upstreamFailure(res, err);
+  }
 });
 
 app.get("/health", (_req: Request, res: Response) => {
   res.json({ ok: true });
 });
+
+function upstreamFailure(res: Response, err: unknown) {
+  if (err instanceof UpstreamError) {
+    const status = err.status === 404 ? 404 : 502;
+    return res.status(status).json({ error: err.message });
+  }
+  console.error("[gateway] handler error:", err);
+  return res.status(500).json({ error: "Internal error" });
+}
 
 app.listen(PORT, () => {
   console.log(`[gateway] listening on http://localhost:${PORT}`);
@@ -151,5 +230,8 @@ app.listen(PORT, () => {
   console.log(`[gateway] payTo:       ${PAY_TO_ADDRESS}`);
   console.log(`[gateway] network:     ${NETWORK} (Base Sepolia)`);
   console.log(`[gateway] db:          ${DB_PATH}`);
-  console.log(`[gateway] try:         curl http://localhost:${PORT}/api/example`);
+  console.log(`[gateway] routes:`);
+  for (const r of ROUTES) {
+    console.log(`             ${r.method.padEnd(4)} ${r.resource}  (${r.priceLabel})`);
+  }
 });
