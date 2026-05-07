@@ -13,7 +13,8 @@ const PAY_TO_ADDRESS = process.env.PAY_TO_ADDRESS ?? PLACEHOLDER_PAY_TO;
 const FACILITATOR_URL = process.env.FACILITATOR_URL ?? "https://x402.org/facilitator";
 const NETWORK = "eip155:84532";
 const USDC_BASE_SEPOLIA = "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
-const DB_PATH = process.env.DB_PATH ?? path.resolve(process.cwd(), "agentpay.sqlite");
+const REPO_ROOT = path.resolve(import.meta.dirname, "../../..");
+const DB_PATH = process.env.DB_PATH ?? path.resolve(REPO_ROOT, "agentpay.sqlite");
 
 if (PAY_TO_ADDRESS === PLACEHOLDER_PAY_TO) {
   console.warn(
