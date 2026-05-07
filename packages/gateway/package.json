@@ -1,0 +1,13 @@
+{
+  "name": "@agentpay/gateway",
+  "version": "0.0.0",
+  "private": true,
+  "description": "x402 payment gateway: Express middleware and reverse proxy that 402-gates API endpoints.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

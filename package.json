@@ -1,0 +1,21 @@
+{
+  "name": "agentpay",
+  "private": true,
+  "version": "0.0.0",
+  "description": "x402 monetization gateway, SDK, dashboard, and marketplace.",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "dev": "npm run dev --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
