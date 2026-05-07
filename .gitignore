@@ -13,8 +13,14 @@ npm-debug.log*
 
 *.sqlite
 *.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
 *.db
 *.db-journal
+*.db-wal
+*.db-shm
+
+GITHUBINFO/
 
 .DS_Store
 Thumbs.db
