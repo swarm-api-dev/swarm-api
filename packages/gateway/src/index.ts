@@ -6,7 +6,12 @@ import { paymentMiddleware, x402ResourceServer } from "@x402/express";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { HTTPFacilitatorClient, type RoutesConfig } from "@x402/core/server";
 import { createDb, ensureSchema, payments, upsertEndpoint } from "@agentpay/db";
-import { listFilings, resolveCompany, UpstreamError } from "@agentpay/company-intel";
+import {
+  extractFiling,
+  listFilings,
+  resolveCompany,
+  UpstreamError,
+} from "@agentpay/company-intel";
 
 const PORT = Number(process.env.PORT ?? 3000);
 const PLACEHOLDER_PAY_TO = "0x0000000000000000000000000000000000000001";
@@ -87,6 +92,16 @@ const ROUTES: RouteSpec[] = [
     description:
       "List recent SEC filings (10-K, 10-Q, 8-K, S-1, Form 4, etc.) for a CIK with optional type filter and date floor.",
   },
+  {
+    id: "filings-extract",
+    method: "GET",
+    resource: "/v1/filings/extract",
+    priceAtomic: "50000",
+    priceLabel: "$0.05",
+    name: "Extract filing items",
+    description:
+      "Parse a 10-K, 10-Q, or 8-K from EDGAR into structured per-Item JSON. Pass an accession (e.g. 0000320193-26-000011) and optionally items=1A,7,7A to filter.",
+  },
 ];
 
 for (const r of ROUTES) {
@@ -106,7 +121,7 @@ for (const r of ROUTES) {
 
 const facilitatorClient = new HTTPFacilitatorClient({ url: FACILITATOR_URL });
 const resourceServer = new x402ResourceServer(facilitatorClient).register(
-  NETWORK,
+  NETWORK as `${string}:${string}`,
   new ExactEvmScheme(),
 );
 
@@ -232,6 +247,29 @@ app.get("/v1/companies/filings", async (req: Request, res: Response) => {
 
   try {
     const result = await listFilings(db, id, { types, since, limit });
+    return res.json(result);
+  } catch (err) {
+    return upstreamFailure(res, err);
+  }
+});
+
+app.get("/v1/filings/extract", async (req: Request, res: Response) => {
+  const accession = typeof req.query.accession === "string" ? req.query.accession : null;
+  if (!accession || !/^\d{10}-\d{2}-\d{6}$/.test(accession)) {
+    return res.status(400).json({
+      error:
+        "Provide ?accession=NNNNNNNNNN-YY-NNNNNN (e.g. 0000320193-26-000011). Get one from /v1/companies/filings.",
+    });
+  }
+  const items =
+    typeof req.query.items === "string"
+      ? req.query.items
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : undefined;
+  try {
+    const result = await extractFiling(db, accession, { items });
     return res.json(result);
   } catch (err) {
     return upstreamFailure(res, err);

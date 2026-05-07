@@ -15,7 +15,8 @@
   },
   "dependencies": {
     "@agentpay/db": "*",
-    "drizzle-orm": "^0.36.0"
+    "drizzle-orm": "^0.36.0",
+    "linkedom": "^0.18.5"
   },
   "devDependencies": {
     "@types/node": "^22.9.0"

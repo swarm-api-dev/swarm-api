@@ -7,20 +7,13 @@ export async function fetchJsonCached<T>(
   ttlMs: number,
   init?: RequestInit,
 ): Promise<T> {
-  const key = url;
+  const key = `json:${url}`;
   const row = db.select().from(cache).where(eq(cache.key, key)).get();
   if (row && row.expiresAt.getTime() > Date.now()) {
     return JSON.parse(row.value) as T;
   }
 
-  const res = await fetch(url, init);
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new UpstreamError(
-      `Upstream ${res.status} ${res.statusText} for ${url}${body ? `: ${body.slice(0, 200)}` : ""}`,
-      res.status,
-    );
-  }
+  const res = await upstreamFetch(url, init);
   const data = (await res.json()) as T;
 
   const value = JSON.stringify(data);
@@ -31,6 +24,42 @@ export async function fetchJsonCached<T>(
     .run();
 
   return data;
+}
+
+export async function fetchTextCached(
+  db: DB,
+  url: string,
+  ttlMs: number,
+  init?: RequestInit,
+): Promise<string> {
+  const key = `text:${url}`;
+  const row = db.select().from(cache).where(eq(cache.key, key)).get();
+  if (row && row.expiresAt.getTime() > Date.now()) {
+    return row.value;
+  }
+
+  const res = await upstreamFetch(url, init);
+  const text = await res.text();
+
+  const expiresAt = new Date(Date.now() + ttlMs);
+  db.insert(cache)
+    .values({ key, value: text, expiresAt })
+    .onConflictDoUpdate({ target: cache.key, set: { value: text, expiresAt } })
+    .run();
+
+  return text;
+}
+
+async function upstreamFetch(url: string, init?: RequestInit): Promise<Response> {
+  const res = await fetch(url, init);
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new UpstreamError(
+      `Upstream ${res.status} ${res.statusText} for ${url}${body ? `: ${body.slice(0, 200)}` : ""}`,
+      res.status,
+    );
+  }
+  return res;
 }
 
 export class UpstreamError extends Error {
