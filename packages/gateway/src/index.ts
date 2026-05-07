@@ -71,10 +71,11 @@ app.use((req, res, next) => {
     let txHash: string | null = null;
     let errorCode: string | null = null;
     if (status === "settled") {
-      const xPaymentResponse = res.getHeader("x-payment-response");
-      if (typeof xPaymentResponse === "string") {
+      const settleHeader =
+        res.getHeader("payment-response") ?? res.getHeader("x-payment-response");
+      if (typeof settleHeader === "string") {
         try {
-          const decoded = JSON.parse(Buffer.from(xPaymentResponse, "base64").toString("utf8"));
+          const decoded = JSON.parse(Buffer.from(settleHeader, "base64").toString("utf8"));
           txHash = decoded?.transaction ?? decoded?.txHash ?? null;
         } catch {
           // unparseable settle response
