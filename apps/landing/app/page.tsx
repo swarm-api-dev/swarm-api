@@ -74,25 +74,24 @@ export default async function LandingPage() {
 
       <section className="hero">
         <div className="container">
-          <span className="eyebrow">Built on x402 · Base · USDC</span>
+          <span className="eyebrow">MCP server · Base · USDC</span>
           <h1 className="hero-title">
-            Company intelligence, packaged for{" "}
-            <span className="accent">AI agents</span>.
+            Company intelligence as MCP tools your <span className="accent">agent calls itself</span>.
           </h1>
           <p className="hero-subtitle">
-            SEC filings parsed to JSON, recent news indexed, hiring signals from public ATS boards.
-            Fresh, structured, queryable in one HTTP call. Pay per call in USDC — no keys, no
+            SEC filings, news, and hiring signals as five Claude-Desktop-ready tools. Drop in a
+            config block, fund a wallet, and your agent pays per call in USDC — no API keys, no
             signups, no contracts.
           </p>
           <div className="cta-row">
-            <a href={MARKETPLACE_URL} className="btn btn-primary">
-              Browse the API catalog →
+            <a href="#install" className="btn btn-primary">
+              Install for Claude Desktop →
+            </a>
+            <a href={MARKETPLACE_URL} className="btn">
+              API catalog
             </a>
             <a href={DASHBOARD_URL} className="btn">
               Live usage
-            </a>
-            <a href={WHITEPAPER_URL} target="_blank" rel="noreferrer" className="btn">
-              x402 whitepaper
             </a>
           </div>
         </div>
@@ -186,8 +185,11 @@ export default async function LandingPage() {
             </div>
             <div className="flow-step">
               <div className="num">3</div>
-              <h3>Agent signs & retries</h3>
-              <p>SDK signs an EIP-3009 USDC authorization, retries with one header, gets data.</p>
+              <h3>MCP server signs & retries</h3>
+              <p>
+                @agentpay/mcp signs an EIP-3009 USDC authorization, retries with one header, returns
+                the JSON to your agent — no protocol code in the agent loop.
+              </p>
               <code>200 OK + structured JSON</code>
             </div>
           </div>
@@ -196,86 +198,127 @@ export default async function LandingPage() {
 
       <section className="block">
         <div className="container">
-          <div className="section-eyebrow">Behind the API</div>
-          <h2 className="section-title">Public sources, agent-shaped.</h2>
+          <div className="section-eyebrow">What you can ask</div>
+          <h2 className="section-title">Five tools, one wallet.</h2>
           <p className="section-lede">
-            We aggregate public, freely-licensed primary sources and ship them as structured JSON
-            over a single x402 surface. No sublicensing tricks, no scraping behind paywalls — just
-            engineering work to make data agents can actually use.
+            All five live on the gateway today. Each is an MCP tool for hosts that speak the
+            protocol, and a plain x402 endpoint for everyone else. Sources are public — SEC EDGAR,
+            GDELT 2.0, Greenhouse, and Lever — engineered into JSON your agent can actually consume.
           </p>
           <div className="audiences">
             <article className="audience">
-              <span className="tag tag-providers">SEC EDGAR</span>
-              <h3>Filings, parsed.</h3>
+              <span className="tag tag-providers">SEC filings</span>
+              <h3>From ticker to risk factors in three calls.</h3>
               <p>
-                10-K, 10-Q, 8-K, S-1, Form 4. EDGAR's APIs are free and comprehensive but
-                XBRL-shaped. We resolve tickers, list filings by type and date, and return key
-                sections as structured JSON.
+                EDGAR is free and comprehensive but XBRL-shaped. We resolve tickers, list filings,
+                and parse 10-K / 10-Q / 8-K filings into per-Item JSON.
               </p>
-              <ul>
-                <li>Resolve "AAPL" → CIK + canonical company record</li>
-                <li>List recent filings filtered by form type and date</li>
-                <li>Extract sections from a 10-K — risk factors, MD&A, financials</li>
-                <li>Insider transactions decoded from raw Form 4</li>
+              <ul className="tool-list">
+                <li>
+                  <code className="tool-name">resolve_company</code>
+                  <span className="tool-price">$0.002</span>
+                  <span className="tool-desc">Ticker / CIK / name → canonical SEC record.</span>
+                </li>
+                <li>
+                  <code className="tool-name">list_filings</code>
+                  <span className="tool-price">$0.005</span>
+                  <span className="tool-desc">Recent filings filtered by form type and date.</span>
+                </li>
+                <li>
+                  <code className="tool-name">extract_filing</code>
+                  <span className="tool-price">$0.05</span>
+                  <span className="tool-desc">10-K / 10-Q / 8-K → Item-level structured JSON.</span>
+                </li>
               </ul>
-              <pre className="code">
-                <span className="k">await</span> fetch({"\n  "}
-                <span className="s">
-                  &quot;https://api.agentpay/v1/companies/filings?id=AAPL&types=10-K,8-K&quot;
-                </span>
-                {"\n});"}
-              </pre>
             </article>
             <article className="audience">
-              <span className="tag tag-agents">News + hiring signals</span>
-              <h3>Fresh signals on every company.</h3>
+              <span className="tag tag-agents">Real-time signals</span>
+              <h3>What the model couldn't memorise.</h3>
               <p>
-                GDELT 2.0 indexes essentially every news article published worldwide every 15
-                minutes. Greenhouse and Lever expose every public job board as a clean JSON API.
-                We query both per-company so the agent gets one structured answer.
+                GDELT 2.0 indexes most of the world's news every 15 minutes. Public Greenhouse and
+                Lever boards expose hiring activity. Both keyed by company name.
               </p>
-              <ul>
-                <li>Recent news with extracted entities, themes, and tone</li>
-                <li>Open job postings with parsed roles and locations</li>
-                <li>Hiring trend over the last 30 / 90 / 365 days</li>
-                <li>De-duplication across syndicated articles</li>
+              <ul className="tool-list">
+                <li>
+                  <code className="tool-name">company_news</code>
+                  <span className="tool-price">$0.02</span>
+                  <span className="tool-desc">Recent articles via GDELT, default 30-day window.</span>
+                </li>
+                <li>
+                  <code className="tool-name">company_jobs</code>
+                  <span className="tool-price">$0.01</span>
+                  <span className="tool-desc">Open postings from Greenhouse + Lever boards.</span>
+                </li>
               </ul>
-              <pre className="code">
-                <span className="k">const</span> fetch = <span className="f">createAgentClient</span>(
-                {"{\n  "}
-                <span className="n">privateKey</span>: process.env.AGENT_PRIVATE_KEY,{"\n  "}
-                <span className="n">maxSpendPerRequest</span>: <span className="s">50000n</span>,{" "}
-                <span className="c">// $0.05 cap</span>
-                {"\n});"}
-              </pre>
+              <p className="callout">
+                A full company due-diligence pass — resolve, list, extract a 10-K, news, jobs — runs
+                about <strong>$0.087</strong> per company.
+              </p>
             </article>
           </div>
         </div>
       </section>
 
-      <section className="block">
+      <section className="block" id="install">
         <div className="container">
           <div className="quickstart">
-            <h2>Plug into your agent in five lines.</h2>
+            <h2>Drop into Claude Desktop in two steps.</h2>
             <p>
-              Hand the SDK a Base wallet and a budget cap. Every paid HTTP call resolves through
-              the same client.
+              One config block plus a funded Base wallet. The MCP server signs every paid call for
+              you — your agent never touches the protocol.
             </p>
-            <div className="commands">
-              <div>
-                <span className="prompt">$</span>npm i @agentpay/sdk
-              </div>
-              <div>
-                <span className="prompt">$</span>export AGENT_PRIVATE_KEY=0x...
-              </div>
-              <div>
-                <span className="prompt">$</span>node -e &quot;
-                <span style={{ color: "var(--purple)" }}>const</span> {"{ createAgentClient }"} ={" "}
-                <span style={{ color: "var(--purple)" }}>require</span>(&apos;@agentpay/sdk&apos;);
-                &quot;
+
+            <div className="install-step">
+              <div className="step-num">1</div>
+              <div className="step-body">
+                <p className="step-title">
+                  Add this block to <code>claude_desktop_config.json</code>:
+                </p>
+                <pre className="code config-block">{`{
+  "mcpServers": {
+    "agentpay": {
+      "command": "npx",
+      "args": ["-y", "@agentpay/mcp"],
+      "env": {
+        "AGENTPAY_PRIVATE_KEY": "0xYOUR_BASE_WALLET_KEY",
+        "AGENTPAY_GATEWAY_URL": "https://api.agentpay.ai",
+        "AGENTPAY_MAX_SPEND_PER_REQUEST_ATOMIC": "100000"
+      }
+    }
+  }
+}`}</pre>
               </div>
             </div>
-            <div className="cta-row">
+
+            <div className="install-step">
+              <div className="step-num">2</div>
+              <div className="step-body">
+                <p className="step-title">Restart Claude Desktop and ask away.</p>
+                <p className="muted">
+                  <em>"Pull the latest 8-K filings for AAPL and summarise the material events."</em>
+                </p>
+                <p className="muted">
+                  Claude picks the right tools (<code>resolve_company</code> →{" "}
+                  <code>list_filings</code> → <code>extract_filing</code>) and pays per call.
+                  Default budget cap is $0.10 per request.
+                </p>
+              </div>
+            </div>
+
+            <h3 className="alt-heading">Or use the SDK directly</h3>
+            <pre className="code">{`import { createAgentClient } from "@agentpay/sdk";
+
+const fetch = createAgentClient({
+  privateKey: process.env.AGENT_PRIVATE_KEY,
+  maxSpendPerRequest: 100_000n, // $0.10 cap
+});
+
+const res = await fetch(
+  "https://api.agentpay.ai/v1/companies/filings?id=0000320193"
+);
+const filings = (await res.json()).filings;`}</pre>
+
+            <div className="cta-row install-ctas">
               <a href={MARKETPLACE_URL} className="btn btn-primary">
                 See the API catalog
               </a>
