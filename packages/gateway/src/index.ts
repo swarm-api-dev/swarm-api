@@ -9,10 +9,12 @@ import { createDb, ensureSchema, payments, upsertEndpoint } from "@agentpay/db";
 import {
   extractFiling,
   listFilings,
+  listInsiderTransactions,
   listJobs,
   listNews,
   resolveCompany,
   UpstreamError,
+  webSearch,
   type AtsProvider,
 } from "@agentpay/company-intel";
 
@@ -52,6 +54,7 @@ const FACILITATOR_URL = process.env.FACILITATOR_URL ?? PROFILE_CFG.facilitator;
 const REPO_ROOT = path.resolve(import.meta.dirname, "../../..");
 const DB_PATH = process.env.DB_PATH ?? path.resolve(REPO_ROOT, "agentpay.sqlite");
 const GATEWAY_URL = process.env.GATEWAY_URL ?? `http://localhost:${PORT}`;
+const BRAVE_API_KEY = process.env.BRAVE_API_KEY ?? "";
 
 if (PAY_TO_ADDRESS === PLACEHOLDER_PAY_TO) {
   console.warn(
@@ -124,6 +127,26 @@ const ROUTES: RouteSpec[] = [
     name: "Open jobs",
     description:
       "Open job postings from a company's public Greenhouse or Lever board. Pass company=<name> for auto-discovery, or ats=greenhouse|lever&slug=<slug> for explicit lookup.",
+  },
+  {
+    id: "companies-insiders",
+    method: "GET",
+    resource: "/v1/companies/insiders",
+    priceAtomic: "30000",
+    priceLabel: "$0.03",
+    name: "Insider transactions",
+    description:
+      "Form 4 insider transactions (purchases, sales, awards, derivative exercises) for a company's officers, directors, and 10% holders, parsed from EDGAR XML. Pass id=<CIK>, optional since/until (YYYY-MM-DD), limit (default 10, max 50).",
+  },
+  {
+    id: "web-search",
+    method: "GET",
+    resource: "/v1/web/search",
+    priceAtomic: "10000",
+    priceLabel: "$0.01",
+    name: "Web search",
+    description:
+      "General web search via the Brave Search API. Pass q=<query>, optional count (default 10, max 20), country (e.g. US), freshness (pd | pw | pm | py for past day/week/month/year), language (e.g. en).",
   },
 ];
 
@@ -306,6 +329,39 @@ app.get("/v1/companies/jobs", async (req: Request, res: Response) => {
   const slug = typeof req.query.slug === "string" ? req.query.slug : undefined;
   try {
     const result = await listJobs(db, company, { ats, slug, limit });
+    return res.json(result);
+  } catch (err) {
+    return upstreamFailure(res, err);
+  }
+});
+
+app.get("/v1/companies/insiders", async (req: Request, res: Response) => {
+  const id = typeof req.query.id === "string" ? req.query.id : null;
+  if (!id) {
+    return res.status(400).json({ error: "Provide ?id=<CIK>." });
+  }
+  const since = typeof req.query.since === "string" ? req.query.since : undefined;
+  const until = typeof req.query.until === "string" ? req.query.until : undefined;
+  const limit = typeof req.query.limit === "string" ? Number(req.query.limit) : undefined;
+  try {
+    const result = await listInsiderTransactions(db, id, { since, until, limit });
+    return res.json(result);
+  } catch (err) {
+    return upstreamFailure(res, err);
+  }
+});
+
+app.get("/v1/web/search", async (req: Request, res: Response) => {
+  const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  if (!q) {
+    return res.status(400).json({ error: "Provide ?q=<query>." });
+  }
+  const count = typeof req.query.count === "string" ? Number(req.query.count) : undefined;
+  const country = typeof req.query.country === "string" ? req.query.country : undefined;
+  const freshness = typeof req.query.freshness === "string" ? req.query.freshness : undefined;
+  const language = typeof req.query.language === "string" ? req.query.language : undefined;
+  try {
+    const result = await webSearch(db, q, BRAVE_API_KEY, { count, country, freshness, language });
     return res.json(result);
   } catch (err) {
     return upstreamFailure(res, err);

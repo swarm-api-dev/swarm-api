@@ -22,4 +22,14 @@ export type {
   ListJobsResponse,
 } from "./jobs";
 
+export { listInsiderTransactions } from "./insiders";
+export type {
+  InsiderTransaction,
+  ListInsidersOptions,
+  ListInsidersResponse,
+} from "./insiders";
+
+export { webSearch } from "./search";
+export type { SearchResult, WebSearchOptions, WebSearchResponse } from "./search";
+
 export { UpstreamError } from "./cache";

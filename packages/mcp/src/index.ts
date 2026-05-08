@@ -129,6 +129,53 @@ server.registerTool(
   },
 );
 
+server.registerTool(
+  "insider_transactions",
+  {
+    description:
+      "Form 4 insider transactions (purchases, sales, awards, derivative exercises) for a company's officers, directors, and 10% holders, parsed from EDGAR XML. CEO/CFO open-market buys/sells are real material signals. Pass the 10-digit CIK from resolve_company. Cost: $0.03 USDC per call.",
+    inputSchema: {
+      id: z.string().describe("10-digit zero-padded SEC CIK (from resolve_company.matches[].cik)"),
+      since: z.string().optional().describe("ISO date floor for filing date, e.g. 2025-01-01"),
+      until: z.string().optional().describe("ISO date ceiling for transaction date"),
+      limit: z.number().int().min(1).max(50).optional().describe("Max Form 4 filings to fetch (default 10, max 50)"),
+    },
+  },
+  async ({ id, since, until, limit }) => {
+    const params = new URLSearchParams({ id });
+    if (since) params.set("since", since);
+    if (until) params.set("until", until);
+    if (limit) params.set("limit", String(limit));
+    return await callJson("GET", `/v1/companies/insiders?${params}`);
+  },
+);
+
+server.registerTool(
+  "web_search",
+  {
+    description:
+      "General web search via the Brave Search API. Use this when you need information that isn't company-keyed — current events, technical answers, multi-source research. Cost: $0.01 USDC per call.",
+    inputSchema: {
+      q: z.string().min(1).describe("Search query (any natural-language string)"),
+      count: z.number().int().min(1).max(20).optional().describe("Number of results (default 10, max 20)"),
+      country: z.string().optional().describe("ISO country code (e.g. US, GB) to bias results"),
+      freshness: z
+        .enum(["pd", "pw", "pm", "py"])
+        .optional()
+        .describe("Time window: pd (past day), pw (week), pm (month), py (year)"),
+      language: z.string().optional().describe("Language code (e.g. en, fr)"),
+    },
+  },
+  async ({ q, count, country, freshness, language }) => {
+    const params = new URLSearchParams({ q });
+    if (count) params.set("count", String(count));
+    if (country) params.set("country", country);
+    if (freshness) params.set("freshness", freshness);
+    if (language) params.set("language", language);
+    return await callJson("GET", `/v1/web/search?${params}`);
+  },
+);
+
 interface CallOptions {
   body?: unknown;
 }
