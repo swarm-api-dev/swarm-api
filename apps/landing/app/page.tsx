@@ -262,45 +262,54 @@ export default async function LandingPage() {
       <section className="block" id="install">
         <div className="container">
           <div className="quickstart">
-            <h2>Drop into Claude Desktop in two steps.</h2>
+            <h2>Drop into Claude Desktop in one command.</h2>
             <p>
-              One config block plus a funded Base wallet. The MCP server signs every paid call for
-              you — your agent never touches the protocol.
+              Generate a Base wallet, fund it with a credit card via Coinbase Onramp, write the
+              Claude Desktop config — all from one CLI. Then restart Claude and ask anything.
             </p>
 
             <div className="install-step">
               <div className="step-num">1</div>
               <div className="step-body">
-                <p className="step-title">
-                  Add this block to <code>claude_desktop_config.json</code>:
+                <p className="step-title">Run the setup CLI:</p>
+                <pre className="code config-block">{`$ npx -y @agentpay/setup
+
+✓ Generated wallet: 0xAB12…CD34
+? How would you like to fund it?
+  > Buy USDC with card via Coinbase Onramp
+✓ Detected 10.000000 USDC.
+✓ Saved Claude Desktop config to ~/.agentpay/claude-desktop.json`}</pre>
+                <p className="muted">
+                  No API keys, no signups. The CLI never touches your card — the Coinbase-hosted
+                  Onramp page handles purchase + KYC, then deposits USDC to your fresh wallet.
                 </p>
-                <pre className="code config-block">{`{
-  "mcpServers": {
-    "agentpay": {
-      "command": "npx",
-      "args": ["-y", "@agentpay/mcp"],
-      "env": {
-        "AGENTPAY_PRIVATE_KEY": "0xYOUR_BASE_WALLET_KEY",
-        "AGENTPAY_GATEWAY_URL": "https://api.agentpay.ai",
-        "AGENTPAY_MAX_SPEND_PER_REQUEST_ATOMIC": "100000"
-      }
-    }
-  }
-}`}</pre>
               </div>
             </div>
 
             <div className="install-step">
               <div className="step-num">2</div>
               <div className="step-body">
-                <p className="step-title">Restart Claude Desktop and ask away.</p>
+                <p className="step-title">Merge into Claude Desktop config and restart.</p>
+                <p className="muted">
+                  Open <code>~/Library/Application Support/Claude/claude_desktop_config.json</code>{" "}
+                  (or <code>%APPDATA%\Claude\</code> on Windows), paste the <code>agentpay</code>{" "}
+                  block from <code>~/.agentpay/claude-desktop.json</code> into{" "}
+                  <code>mcpServers</code>, and restart Claude Desktop.
+                </p>
+              </div>
+            </div>
+
+            <div className="install-step">
+              <div className="step-num">3</div>
+              <div className="step-body">
+                <p className="step-title">Ask Claude anything about a public company.</p>
                 <p className="muted">
                   <em>"Pull the latest 8-K filings for AAPL and summarise the material events."</em>
                 </p>
                 <p className="muted">
                   Claude picks the right tools (<code>resolve_company</code> →{" "}
                   <code>list_filings</code> → <code>extract_filing</code>) and pays per call.
-                  Default budget cap is $0.10 per request.
+                  Default budget cap is $0.10 per request — agent stops if it tries to exceed it.
                 </p>
               </div>
             </div>
