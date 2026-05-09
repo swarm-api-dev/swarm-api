@@ -32,4 +32,20 @@ export type {
 export { webSearch } from "./search";
 export type { SearchResult, WebSearchOptions, WebSearchResponse } from "./search";
 
+export { fetchRepoSnapshot, parseRepoSlug } from "./github";
+export type {
+  GitHubRepoSnapshot,
+  GitHubRepoCommit,
+  GitHubRepoRelease,
+  GitHubRepoContributor,
+} from "./github";
+
+export { fetchPackageInfo } from "./packages";
+export type {
+  PackageRegistry,
+  PackageInfo,
+  PackageVulnerability,
+  PackageVersionRecord,
+} from "./packages";
+
 export { UpstreamError } from "./cache";

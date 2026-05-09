@@ -8,6 +8,8 @@ import { HTTPFacilitatorClient, type RoutesConfig } from "@x402/core/server";
 import { createDb, ensureSchema, payments, upsertEndpoint } from "@swarmapi/db";
 import {
   extractFiling,
+  fetchPackageInfo,
+  fetchRepoSnapshot,
   listFilings,
   listInsiderTransactions,
   listJobs,
@@ -16,6 +18,7 @@ import {
   UpstreamError,
   webSearch,
   type AtsProvider,
+  type PackageRegistry,
 } from "@swarmapi/company-intel";
 
 const PORT = Number(process.env.PORT ?? 3000);
@@ -55,6 +58,7 @@ const REPO_ROOT = path.resolve(import.meta.dirname, "../../..");
 const DB_PATH = process.env.DB_PATH ?? path.resolve(REPO_ROOT, "swarmapi.sqlite");
 const GATEWAY_URL = process.env.GATEWAY_URL ?? `http://localhost:${PORT}`;
 const BRAVE_API_KEY = process.env.BRAVE_API_KEY ?? "";
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN ?? "";
 
 if (PAY_TO_ADDRESS === PLACEHOLDER_PAY_TO) {
   console.warn(
@@ -147,6 +151,26 @@ const ROUTES: RouteSpec[] = [
     name: "Web search",
     description:
       "General web search via the Brave Search API. Pass q=<query>, optional count (default 10, max 20), country (e.g. US), freshness (pd | pw | pm | py for past day/week/month/year), language (e.g. en).",
+  },
+  {
+    id: "github-repo",
+    method: "GET",
+    resource: "/v1/github/repo",
+    priceAtomic: "5000",
+    priceLabel: "$0.005",
+    name: "GitHub repository snapshot",
+    description:
+      "Snapshot of a public GitHub repo: stars, forks, languages, license, default branch, archive status, plus the last 10 commits, last 5 releases, and top contributors. Pass slug=<owner/repo> (e.g. facebook/react) or url=https://github.com/owner/repo.",
+  },
+  {
+    id: "packages-info",
+    method: "GET",
+    resource: "/v1/packages/info",
+    priceAtomic: "5000",
+    priceLabel: "$0.005",
+    name: "Package metadata + CVE scan",
+    description:
+      "Latest version, license, deps, recent versions, deprecation status, and known vulnerabilities (via OSV.dev) for an npm, PyPI, or cargo package. Pass registry=npm|pypi|cargo and name=<package-name>.",
   },
 ];
 
@@ -329,6 +353,43 @@ app.get("/v1/companies/jobs", async (req: Request, res: Response) => {
   const slug = typeof req.query.slug === "string" ? req.query.slug : undefined;
   try {
     const result = await listJobs(db, company, { ats, slug, limit });
+    return res.json(result);
+  } catch (err) {
+    return upstreamFailure(res, err);
+  }
+});
+
+app.get("/v1/github/repo", async (req: Request, res: Response) => {
+  const slug = typeof req.query.slug === "string" ? req.query.slug : null;
+  const url = typeof req.query.url === "string" ? req.query.url : null;
+  const target = slug ?? url;
+  if (!target) {
+    return res
+      .status(400)
+      .json({ error: "Provide ?slug=<owner/repo> or ?url=https://github.com/owner/repo." });
+  }
+  try {
+    const result = await fetchRepoSnapshot(db, target, GITHUB_TOKEN);
+    return res.json(result);
+  } catch (err) {
+    if (err instanceof Error && /Invalid GitHub slug/.test(err.message)) {
+      return res.status(400).json({ error: err.message });
+    }
+    return upstreamFailure(res, err);
+  }
+});
+
+app.get("/v1/packages/info", async (req: Request, res: Response) => {
+  const registry = req.query.registry;
+  const name = typeof req.query.name === "string" ? req.query.name.trim() : "";
+  if (registry !== "npm" && registry !== "pypi" && registry !== "cargo") {
+    return res.status(400).json({ error: "Provide ?registry=npm|pypi|cargo." });
+  }
+  if (!name) {
+    return res.status(400).json({ error: "Provide ?name=<package-name>." });
+  }
+  try {
+    const result = await fetchPackageInfo(db, registry as PackageRegistry, name);
     return res.json(result);
   } catch (err) {
     return upstreamFailure(res, err);

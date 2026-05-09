@@ -176,6 +176,41 @@ server.registerTool(
   },
 );
 
+server.registerTool(
+  "github_repo",
+  {
+    description:
+      "Snapshot of a public GitHub repository: stars, forks, languages, license, archive status, plus the last 10 commits, last 5 releases, and top contributors. Use this to assess maintenance, recency, and health before recommending or depending on a repo. Cost: $0.005 USDC per call.",
+    inputSchema: {
+      slug: z
+        .string()
+        .min(3)
+        .describe("owner/repo (e.g. 'facebook/react') or full GitHub URL"),
+    },
+  },
+  async ({ slug }) => {
+    return await callJson("GET", `/v1/github/repo?slug=${encodeURIComponent(slug)}`);
+  },
+);
+
+server.registerTool(
+  "package_info",
+  {
+    description:
+      "Latest version, license, dependencies, recent releases, deprecation status, and known CVE vulnerabilities (via OSV.dev) for a package on npm, PyPI, or cargo. Use this to check whether a dependency is safe, current, and not deprecated. Cost: $0.005 USDC per call.",
+    inputSchema: {
+      registry: z
+        .enum(["npm", "pypi", "cargo"])
+        .describe("Package registry"),
+      name: z.string().min(1).describe("Package name (e.g. 'react', 'requests', 'serde')"),
+    },
+  },
+  async ({ registry, name }) => {
+    const params = new URLSearchParams({ registry, name });
+    return await callJson("GET", `/v1/packages/info?${params}`);
+  },
+);
+
 interface CallOptions {
   body?: unknown;
 }
