@@ -76,12 +76,12 @@ export default async function LandingPage() {
         <div className="container">
           <span className="eyebrow">MCP server · Base · USDC</span>
           <h1 className="hero-title">
-            Company intelligence as MCP tools your <span className="accent">agent calls itself</span>.
+            Real-world data as MCP tools your <span className="accent">agent calls itself</span>.
           </h1>
           <p className="hero-subtitle">
-            SEC filings, news, and hiring signals as five Claude-Desktop-ready tools. Drop in a
-            config block, fund a wallet, and your agent pays per call in USDC — no API keys, no
-            signups, no contracts.
+            Nine paid endpoints — SEC filings, news, hiring, insider trades, web search, GitHub
+            repos, package metadata. Drop a config block into Claude Desktop, fund a Base wallet,
+            and your agent pays per call in USDC. No API keys, no signups, no contracts.
           </p>
           <div className="cta-row">
             <a href="#install" className="btn btn-primary">
@@ -174,8 +174,8 @@ export default async function LandingPage() {
             <div className="flow-step">
               <div className="num">1</div>
               <h3>Agent asks a question</h3>
-              <p>Plain HTTP request to a company-intelligence endpoint.</p>
-              <code>GET /v1/companies/filings?id=AAPL</code>
+              <p>Plain HTTP request to any of the 9 endpoints.</p>
+              <code>GET /v1/github/repo?slug=facebook/react</code>
             </div>
             <div className="flow-step">
               <div className="num">2</div>
@@ -199,19 +199,19 @@ export default async function LandingPage() {
       <section className="block">
         <div className="container">
           <div className="section-eyebrow">What you can ask</div>
-          <h2 className="section-title">Five tools, one wallet.</h2>
+          <h2 className="section-title">Nine tools, one wallet.</h2>
           <p className="section-lede">
-            All five live on the gateway today. Each is an MCP tool for hosts that speak the
-            protocol, and a plain x402 endpoint for everyone else. Sources are public — SEC EDGAR,
-            GDELT 2.0, Greenhouse, and Lever — engineered into JSON your agent can actually consume.
+            Each is an MCP tool for Claude Desktop / Cursor / any MCP host, and a plain x402 HTTP
+            endpoint for everyone else. Sources are public — SEC EDGAR, GDELT, Greenhouse, Lever,
+            GitHub, npm/PyPI/cargo, OSV.dev, Brave Search — engineered into JSON agents can consume.
           </p>
           <div className="audiences">
             <article className="audience">
-              <span className="tag tag-providers">SEC filings</span>
-              <h3>From ticker to risk factors in three calls.</h3>
+              <span className="tag tag-providers">SEC + insiders</span>
+              <h3>From ticker to risk factors to officer trades.</h3>
               <p>
                 EDGAR is free and comprehensive but XBRL-shaped. We resolve tickers, list filings,
-                and parse 10-K / 10-Q / 8-K filings into per-Item JSON.
+                parse 10-K/10-Q/8-K filings into per-Item JSON, and decode Form 4 insider trades.
               </p>
               <ul className="tool-list">
                 <li>
@@ -229,6 +229,11 @@ export default async function LandingPage() {
                   <span className="tool-price">$0.05</span>
                   <span className="tool-desc">10-K / 10-Q / 8-K → Item-level structured JSON.</span>
                 </li>
+                <li>
+                  <code className="tool-name">insider_transactions</code>
+                  <span className="tool-price">$0.03</span>
+                  <span className="tool-desc">Form 4 trades for officers, directors, 10% holders.</span>
+                </li>
               </ul>
             </article>
             <article className="audience">
@@ -236,7 +241,7 @@ export default async function LandingPage() {
               <h3>What the model couldn't memorise.</h3>
               <p>
                 GDELT 2.0 indexes most of the world's news every 15 minutes. Public Greenhouse and
-                Lever boards expose hiring activity. Both keyed by company name.
+                Lever boards expose hiring activity. Brave Search covers everything else.
               </p>
               <ul className="tool-list">
                 <li>
@@ -249,10 +254,36 @@ export default async function LandingPage() {
                   <span className="tool-price">$0.01</span>
                   <span className="tool-desc">Open postings from Greenhouse + Lever boards.</span>
                 </li>
+                <li>
+                  <code className="tool-name">web_search</code>
+                  <span className="tool-price">$0.01</span>
+                  <span className="tool-desc">General web search via the Brave Search API.</span>
+                </li>
+              </ul>
+            </article>
+            <article className="audience">
+              <span className="tag tag-code">Code intelligence</span>
+              <h3>What your coding agent needs to ship safely.</h3>
+              <p>
+                The data Cursor and Claude Code reach for every prompt: is this repo maintained? Is
+                this dependency current and free of CVEs? GitHub + npm + PyPI + cargo + OSV.dev,
+                bundled into single calls.
+              </p>
+              <ul className="tool-list">
+                <li>
+                  <code className="tool-name">github_repo</code>
+                  <span className="tool-price">$0.005</span>
+                  <span className="tool-desc">Stars, languages, license, last 10 commits, releases.</span>
+                </li>
+                <li>
+                  <code className="tool-name">package_info</code>
+                  <span className="tool-price">$0.005</span>
+                  <span className="tool-desc">npm/PyPI/cargo metadata + OSV.dev CVE scan.</span>
+                </li>
               </ul>
               <p className="callout">
-                A full company due-diligence pass — resolve, list, extract a 10-K, news, jobs — runs
-                about <strong>$0.087</strong> per company.
+                A full due-diligence pass — every tool fired once — costs about{" "}
+                <strong>$0.13</strong> per company.
               </p>
             </article>
           </div>

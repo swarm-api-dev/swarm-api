@@ -1,16 +1,26 @@
 {
   "name": "@swarmapi/setup",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "license": "MIT",
   "description": "Interactive CLI: generate a Base wallet, fund it via Coinbase Onramp, and write a Claude Desktop MCP config block.",
   "type": "module",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
-    "swarmapi-setup": "src/index.ts"
+    "swarmapi-setup": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.json && node ../../tools/ensure-shebang.mjs dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "dev": "tsx src/index.ts",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "open": "^10.1.0",

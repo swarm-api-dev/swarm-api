@@ -10,8 +10,10 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
+    "build:libs": "npm run build -w @swarmapi/sdk -w @swarmapi/mcp -w @swarmapi/setup --if-present",
     "dev": "npm run dev --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present"
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "prepare": "npm run build -w @swarmapi/sdk --if-present"
   },
   "devDependencies": {
     "typescript": "^5.6.3"

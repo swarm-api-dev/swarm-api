@@ -413,6 +413,11 @@ p.section-lede {
   color: var(--purple);
 }
 
+.tag-code {
+  background: rgba(212, 175, 122, 0.12);
+  color: var(--orange);
+}
+
 .audience p {
   color: var(--muted);
   margin: 0 0 18px;

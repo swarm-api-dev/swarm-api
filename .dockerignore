@@ -1,0 +1,43 @@
+.git
+.gitignore
+.gitattributes
+
+# Dev/runtime artefacts
+node_modules
+**/node_modules
+dist
+**/dist
+build
+.next
+**/.next
+out
+**/out
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# Local secrets — production vars come from the host platform
+.env
+**/.env
+.env.local
+**/.env.local
+
+# Local SQLite + WAL sidecars
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.db
+*.db-journal
+
+# Reference downloads we don't ship
+GITHUBINFO
+x402-whitepaper.pdf
+karpathy-guidelines.mdc
+
+# Editor / OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Claude Code local state
+.claude

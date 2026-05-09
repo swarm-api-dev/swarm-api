@@ -1,17 +1,28 @@
 {
   "name": "@swarmapi/sdk",
-  "version": "0.0.0",
-  "private": true,
-  "description": "Agent SDK: fetch-style client that handles HTTP 402 payment challenges with budget controls.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "description": "SwarmApi agent SDK: fetch-style client that handles HTTP 402 payment challenges with budget controls.",
   "type": "module",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@x402/core": "^2.11.0",
