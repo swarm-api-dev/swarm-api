@@ -5,6 +5,7 @@ import express, { type Request, type Response } from "express";
 import { paymentMiddleware, x402ResourceServer } from "@x402/express";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { HTTPFacilitatorClient, type RoutesConfig } from "@x402/core/server";
+import { createCdpAuthHeaders } from "./cdp-auth";
 import { createDb, ensureSchema, payments, upsertEndpoint } from "@swarmapi/db";
 import {
   extractFiling,
@@ -28,12 +29,19 @@ const PAY_TO_ADDRESS = process.env.PAY_TO_ADDRESS ?? PLACEHOLDER_PAY_TO;
 type NetworkProfile = "base-mainnet" | "base-sepolia";
 const NETWORK_PROFILES: Record<
   NetworkProfile,
-  { network: string; usdc: string; facilitator: string; label: string }
+  {
+    network: string;
+    usdc: string;
+    facilitator: string;
+    facilitatorFallback?: string;
+    label: string;
+  }
 > = {
   "base-mainnet": {
     network: "eip155:8453",
     usdc: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-    facilitator: "https://facilitator.payai.network",
+    facilitator: "https://api.cdp.coinbase.com/platform/v2/x402",
+    facilitatorFallback: "https://facilitator.payai.network",
     label: "Base mainnet",
   },
   "base-sepolia": {
@@ -52,7 +60,36 @@ if (!(PROFILE in NETWORK_PROFILES)) {
 const PROFILE_CFG = NETWORK_PROFILES[PROFILE];
 const NETWORK = PROFILE_CFG.network;
 const USDC_ASSET = PROFILE_CFG.usdc;
-const FACILITATOR_URL = process.env.FACILITATOR_URL ?? PROFILE_CFG.facilitator;
+
+const CDP_API_KEY_NAME = process.env.CDP_API_KEY_NAME ?? "";
+const CDP_API_KEY_SECRET = process.env.CDP_API_KEY_SECRET ?? "";
+
+const cdpCredsAvailable = Boolean(CDP_API_KEY_NAME && CDP_API_KEY_SECRET);
+let resolvedFacilitatorUrl = process.env.FACILITATOR_URL ?? PROFILE_CFG.facilitator;
+let facilitatorAuth: ReturnType<typeof createCdpAuthHeaders> | undefined;
+
+if (resolvedFacilitatorUrl.includes("api.cdp.coinbase.com")) {
+  if (cdpCredsAvailable) {
+    facilitatorAuth = createCdpAuthHeaders(resolvedFacilitatorUrl, {
+      name: CDP_API_KEY_NAME,
+      secret: CDP_API_KEY_SECRET,
+    });
+  } else if (PROFILE_CFG.facilitatorFallback) {
+    console.warn(
+      `[gateway] CDP facilitator selected but CDP_API_KEY_NAME / CDP_API_KEY_SECRET are unset.\n` +
+        `[gateway] Falling back to ${PROFILE_CFG.facilitatorFallback}. ` +
+        `Set both env vars to use the CDP facilitator.`,
+    );
+    resolvedFacilitatorUrl = PROFILE_CFG.facilitatorFallback;
+  } else {
+    console.warn(
+      `[gateway] CDP facilitator selected but credentials are not configured. ` +
+        `verify/settle/supported calls WILL fail until CDP_API_KEY_NAME and CDP_API_KEY_SECRET are set.`,
+    );
+  }
+}
+
+const FACILITATOR_URL = resolvedFacilitatorUrl;
 
 const REPO_ROOT = path.resolve(import.meta.dirname, "../../..");
 const DB_PATH = process.env.DB_PATH ?? path.resolve(REPO_ROOT, "swarmapi.sqlite");
@@ -189,7 +226,10 @@ for (const r of ROUTES) {
   });
 }
 
-const facilitatorClient = new HTTPFacilitatorClient({ url: FACILITATOR_URL });
+const facilitatorClient = new HTTPFacilitatorClient({
+  url: FACILITATOR_URL,
+  createAuthHeaders: facilitatorAuth,
+});
 const resourceServer = new x402ResourceServer(facilitatorClient).register(
   NETWORK as `${string}:${string}`,
   new ExactEvmScheme(),
@@ -468,7 +508,9 @@ function upstreamFailure(res: Response, err: unknown) {
 app.listen(PORT, () => {
   console.log(`[gateway] listening on http://localhost:${PORT}`);
   console.log(`[gateway] profile:     ${PROFILE} (${PROFILE_CFG.label})`);
-  console.log(`[gateway] facilitator: ${FACILITATOR_URL}`);
+  console.log(
+    `[gateway] facilitator: ${FACILITATOR_URL}${facilitatorAuth ? "  (CDP JWT auth)" : ""}`,
+  );
   console.log(`[gateway] usdc:        ${USDC_ASSET}`);
   console.log(`[gateway] network:     ${NETWORK}`);
   console.log(`[gateway] payTo:       ${PAY_TO_ADDRESS}`);
