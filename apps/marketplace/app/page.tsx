@@ -1,5 +1,5 @@
 import { asc } from "drizzle-orm";
-import { endpoints, type Endpoint } from "@agentpay/db";
+import { endpoints, type Endpoint } from "@swarmapi/db";
 import { getDb } from "../lib/db";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +21,7 @@ function formatUsdc(atomic: string): string {
 function snippet(e: Endpoint): string {
   const url = `${e.gatewayUrl}${e.resource}`;
   const cap = (BigInt(e.priceAtomic) * 10n).toString();
-  return `import { createAgentClient } from "@agentpay/sdk";
+  return `import { createAgentClient } from "@swarmapi/sdk";
 
 const fetch = createAgentClient({
   privateKey: process.env.AGENT_PRIVATE_KEY,
@@ -42,7 +42,7 @@ export default async function MarketplacePage() {
 
   return (
     <main>
-      <h1>AgentPay API catalog</h1>
+      <h1>SwarmApi API catalog</h1>
       <p className="subtitle">
         Company intelligence for AI agents. Pay per call in USDC, no keys, no signups.
       </p>

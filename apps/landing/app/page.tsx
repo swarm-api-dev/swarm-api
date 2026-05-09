@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { payments, endpoints } from "@agentpay/db";
+import { payments, endpoints } from "@swarmapi/db";
 import { getDb } from "../lib/db";
 
 export const dynamic = "force-dynamic";
@@ -57,7 +57,7 @@ export default async function LandingPage() {
         <div className="container">
           <a href="/" className="brand">
             <span className="brand-mark">A</span>
-            AgentPay
+            SwarmApi
           </a>
           <nav className="site-nav">
             <a href={MARKETPLACE_URL}>Marketplace</a>
@@ -130,7 +130,7 @@ export default async function LandingPage() {
           <h2 className="section-title">The data your agent needs after the training cutoff.</h2>
           <p className="section-lede">
             LLMs already know last year's facts. Agents fail on this quarter's filings, this week's
-            news, today's job postings. AgentPay packages public sources into one HTTP surface so
+            news, today's job postings. SwarmApi packages public sources into one HTTP surface so
             that gap closes in a single paid call.
           </p>
           <div className="why-grid">
@@ -187,7 +187,7 @@ export default async function LandingPage() {
               <div className="num">3</div>
               <h3>MCP server signs & retries</h3>
               <p>
-                @agentpay/mcp signs an EIP-3009 USDC authorization, retries with one header, returns
+                @swarmapi/mcp signs an EIP-3009 USDC authorization, retries with one header, returns
                 the JSON to your agent — no protocol code in the agent loop.
               </p>
               <code>200 OK + structured JSON</code>
@@ -272,13 +272,13 @@ export default async function LandingPage() {
               <div className="step-num">1</div>
               <div className="step-body">
                 <p className="step-title">Run the setup CLI:</p>
-                <pre className="code config-block">{`$ npx -y @agentpay/setup
+                <pre className="code config-block">{`$ npx -y @swarmapi/setup
 
 ✓ Generated wallet: 0xAB12…CD34
 ? How would you like to fund it?
   > Buy USDC with card via Coinbase Onramp
 ✓ Detected 10.000000 USDC.
-✓ Saved Claude Desktop config to ~/.agentpay/claude-desktop.json`}</pre>
+✓ Saved Claude Desktop config to ~/.swarmapi/claude-desktop.json`}</pre>
                 <p className="muted">
                   No API keys, no signups. The CLI never touches your card — the Coinbase-hosted
                   Onramp page handles purchase + KYC, then deposits USDC to your fresh wallet.
@@ -292,8 +292,8 @@ export default async function LandingPage() {
                 <p className="step-title">Merge into Claude Desktop config and restart.</p>
                 <p className="muted">
                   Open <code>~/Library/Application Support/Claude/claude_desktop_config.json</code>{" "}
-                  (or <code>%APPDATA%\Claude\</code> on Windows), paste the <code>agentpay</code>{" "}
-                  block from <code>~/.agentpay/claude-desktop.json</code> into{" "}
+                  (or <code>%APPDATA%\Claude\</code> on Windows), paste the <code>swarmapi</code>{" "}
+                  block from <code>~/.swarmapi/claude-desktop.json</code> into{" "}
                   <code>mcpServers</code>, and restart Claude Desktop.
                 </p>
               </div>
@@ -315,7 +315,7 @@ export default async function LandingPage() {
             </div>
 
             <h3 className="alt-heading">Or use the SDK directly</h3>
-            <pre className="code">{`import { createAgentClient } from "@agentpay/sdk";
+            <pre className="code">{`import { createAgentClient } from "@swarmapi/sdk";
 
 const fetch = createAgentClient({
   privateKey: process.env.AGENT_PRIVATE_KEY,
@@ -323,7 +323,7 @@ const fetch = createAgentClient({
 });
 
 const res = await fetch(
-  "https://api.agentpay.ai/v1/companies/filings?id=0000320193"
+  "https://api.swarmapi.ai/v1/companies/filings?id=0000320193"
 );
 const filings = (await res.json()).filings;`}</pre>
 

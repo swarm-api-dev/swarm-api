@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { desc } from "drizzle-orm";
-import { payments, type Payment } from "@agentpay/db";
+import { payments, type Payment } from "@swarmapi/db";
 import { getDb } from "../lib/db";
 
 export const dynamic = "force-dynamic";
@@ -63,7 +63,7 @@ export default async function DashboardPage() {
 
   return (
     <main>
-      <h1>AgentPay dashboard</h1>
+      <h1>SwarmApi dashboard</h1>
       <p className="subtitle">Payment events recorded by the gateway.</p>
 
       <h2>Stats</h2>

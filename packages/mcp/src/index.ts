@@ -3,15 +3,15 @@ import "dotenv/config";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { BudgetExceededError, createAgentClient } from "@agentpay/sdk";
+import { BudgetExceededError, createAgentClient } from "@swarmapi/sdk";
 
-const PRIVATE_KEY = process.env.AGENTPAY_PRIVATE_KEY ?? process.env.AGENT_PRIVATE_KEY;
-const GATEWAY_URL = process.env.AGENTPAY_GATEWAY_URL ?? "http://localhost:3000";
-const MAX_SPEND = parseBigIntEnv(process.env.AGENTPAY_MAX_SPEND_PER_REQUEST_ATOMIC, 100_000n);
+const PRIVATE_KEY = process.env.SWARMAPI_PRIVATE_KEY ?? process.env.AGENT_PRIVATE_KEY;
+const GATEWAY_URL = process.env.SWARMAPI_GATEWAY_URL ?? "http://localhost:3000";
+const MAX_SPEND = parseBigIntEnv(process.env.SWARMAPI_MAX_SPEND_PER_REQUEST_ATOMIC, 100_000n);
 
 if (!PRIVATE_KEY || !PRIVATE_KEY.startsWith("0x")) {
   process.stderr.write(
-    "[agentpay-mcp] Missing AGENTPAY_PRIVATE_KEY. Set it to a Base 0x-prefixed private key with USDC balance.\n",
+    "[swarmapi-mcp] Missing SWARMAPI_PRIVATE_KEY. Set it to a Base 0x-prefixed private key with USDC balance.\n",
   );
   process.exit(1);
 }
@@ -22,7 +22,7 @@ const fetchPaid = createAgentClient({
 });
 
 const server = new McpServer({
-  name: "agentpay",
+  name: "swarmapi",
   version: "0.1.0",
 });
 
@@ -196,7 +196,7 @@ async function callJson(method: "GET" | "POST", path: string, opts: CallOptions 
   } catch (err) {
     if (err instanceof BudgetExceededError) {
       return errorResult(
-        `BudgetExceededError: requested ${err.requested} > allowed ${err.allowed}. Increase AGENTPAY_MAX_SPEND_PER_REQUEST_ATOMIC.`,
+        `BudgetExceededError: requested ${err.requested} > allowed ${err.allowed}. Increase SWARMAPI_MAX_SPEND_PER_REQUEST_ATOMIC.`,
       );
     }
     const msg = err instanceof Error ? err.message : String(err);
@@ -223,5 +223,5 @@ function parseBigIntEnv(raw: string | undefined, fallback: bigint): bigint {
 const transport = new StdioServerTransport();
 await server.connect(transport);
 process.stderr.write(
-  `[agentpay-mcp] connected. gateway=${GATEWAY_URL} maxSpend=${MAX_SPEND} atomic\n`,
+  `[swarmapi-mcp] connected. gateway=${GATEWAY_URL} maxSpend=${MAX_SPEND} atomic\n`,
 );

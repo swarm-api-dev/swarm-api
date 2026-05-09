@@ -1,12 +1,12 @@
 import { XMLParser } from "fast-xml-parser";
-import type { DB } from "@agentpay/db";
+import type { DB } from "@swarmapi/db";
 import { fetchJsonCached, fetchTextCached, UpstreamError } from "./cache";
 import { padCik, type EdgarFilingIndex } from "./edgar";
 import { listFilings } from "./filings";
 
 const TTL_FORM4_INDEX_MS = 7 * 24 * 60 * 60 * 1000;
 const TTL_FORM4_XML_MS = 7 * 24 * 60 * 60 * 1000;
-const EDGAR_HEADERS = { "User-Agent": "AgentPay info@agentpay.ai" } as const;
+const EDGAR_HEADERS = { "User-Agent": "SwarmApi info@swarmapi.ai" } as const;
 
 const TRANSACTION_CODES: Record<string, string> = {
   P: "Open-market purchase",

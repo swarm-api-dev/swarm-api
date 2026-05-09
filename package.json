@@ -1,5 +1,5 @@
 {
-  "name": "agentpay",
+  "name": "swarmapi",
   "private": true,
   "version": "0.0.0",
   "description": "x402 monetization gateway, SDK, dashboard, and marketplace.",

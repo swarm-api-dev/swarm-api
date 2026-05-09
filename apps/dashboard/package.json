@@ -1,8 +1,8 @@
 {
-  "name": "@agentpay/dashboard",
+  "name": "@swarmapi/dashboard",
   "version": "0.0.0",
   "private": true,
-  "description": "Provider dashboard: list paid requests and revenue stats from @agentpay/db.",
+  "description": "Provider dashboard: list paid requests and revenue stats from @swarmapi/db.",
   "scripts": {
     "dev": "next dev --port 3001",
     "build": "next build",
@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@agentpay/db": "*",
+    "@swarmapi/db": "*",
     "drizzle-orm": "^0.36.0",
     "next": "^15.1.0",
     "react": "^19.0.0",

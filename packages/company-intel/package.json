@@ -1,5 +1,5 @@
 {
-  "name": "@agentpay/company-intel",
+  "name": "@swarmapi/company-intel",
   "version": "0.0.0",
   "private": true,
   "description": "Company-intelligence data fetchers (SEC EDGAR, GDELT, Greenhouse, Lever) used by the gateway.",
@@ -14,7 +14,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@agentpay/db": "*",
+    "@swarmapi/db": "*",
     "drizzle-orm": "^0.36.0",
     "fast-xml-parser": "^4.5.0",
     "linkedom": "^0.18.5"

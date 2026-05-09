@@ -1,12 +1,12 @@
 {
-  "name": "@agentpay/mcp",
+  "name": "@swarmapi/mcp",
   "version": "0.0.0",
   "private": true,
-  "description": "MCP server exposing AgentPay company-intelligence endpoints as tools for AI agents (Claude Desktop, Cursor, etc.).",
+  "description": "MCP server exposing SwarmApi company-intelligence endpoints as tools for AI agents (Claude Desktop, Cursor, etc.).",
   "type": "module",
   "main": "src/index.ts",
   "bin": {
-    "agentpay-mcp": "src/index.ts"
+    "swarmapi-mcp": "src/index.ts"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -14,7 +14,7 @@
     "dev": "tsx src/index.ts"
   },
   "dependencies": {
-    "@agentpay/sdk": "*",
+    "@swarmapi/sdk": "*",
     "@modelcontextprotocol/sdk": "^1.18.0",
     "dotenv": "^16.4.5",
     "zod": "^3.23.8"

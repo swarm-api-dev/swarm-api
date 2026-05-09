@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { cache, type DB } from "@agentpay/db";
+import { cache, type DB } from "@swarmapi/db";
 
 export async function fetchJsonCached<T>(
   db: DB,

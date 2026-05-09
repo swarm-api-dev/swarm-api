@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { createAgentClient, BudgetExceededError } from "@agentpay/sdk";
+import { createAgentClient, BudgetExceededError } from "@swarmapi/sdk";
 
 const PRIVATE_KEY = process.env.AGENT_PRIVATE_KEY as `0x${string}` | undefined;
 const GATEWAY_URL = process.env.GATEWAY_URL ?? "http://localhost:3000";

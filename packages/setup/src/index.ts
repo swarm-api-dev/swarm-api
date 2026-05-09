@@ -11,7 +11,7 @@ import open from "open";
 
 const CDP_PROJECT_ID = "ca67d8b0-2675-4286-b036-e090af3cc689";
 const USDC_BASE_MAINNET = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" as const;
-const DEFAULT_GATEWAY = process.env.AGENTPAY_GATEWAY_URL ?? "https://api.agentpay.ai";
+const DEFAULT_GATEWAY = process.env.SWARMAPI_GATEWAY_URL ?? "https://api.swarmapi.ai";
 const POLL_INTERVAL_MS = 5_000;
 
 const ERC20_BALANCE_ABI = [
@@ -123,24 +123,24 @@ async function pollUntilFunded(address: `0x${string}`): Promise<bigint> {
 function writeOutputs(privateKey: string, address: `0x${string}`): void {
   const config = {
     mcpServers: {
-      agentpay: {
+      swarmapi: {
         command: "npx",
-        args: ["-y", "@agentpay/mcp"],
+        args: ["-y", "@swarmapi/mcp"],
         env: {
-          AGENTPAY_PRIVATE_KEY: privateKey,
-          AGENTPAY_GATEWAY_URL: DEFAULT_GATEWAY,
-          AGENTPAY_MAX_SPEND_PER_REQUEST_ATOMIC: "100000",
+          SWARMAPI_PRIVATE_KEY: privateKey,
+          SWARMAPI_GATEWAY_URL: DEFAULT_GATEWAY,
+          SWARMAPI_MAX_SPEND_PER_REQUEST_ATOMIC: "100000",
         },
       },
     },
   };
-  const dir = path.join(homedir(), ".agentpay");
+  const dir = path.join(homedir(), ".swarmapi");
   mkdirSync(dir, { recursive: true });
   const cfgPath = path.join(dir, "claude-desktop.json");
   writeFileSync(cfgPath, JSON.stringify(config, null, 2), { mode: 0o600 });
 
   console.log("─".repeat(60));
-  console.log("MCP config — paste the 'agentpay' entry into your");
+  console.log("MCP config — paste the 'swarmapi' entry into your");
   console.log("Claude Desktop config's 'mcpServers' object:\n");
   console.log(JSON.stringify(config, null, 2));
   console.log("─".repeat(60));
@@ -151,7 +151,7 @@ function writeOutputs(privateKey: string, address: `0x${string}`): void {
   console.log("       macOS:   ~/Library/Application Support/Claude/claude_desktop_config.json");
   console.log("       Windows: %APPDATA%\\Claude\\claude_desktop_config.json");
   console.log("       Linux:   ~/.config/Claude/claude_desktop_config.json");
-  console.log("  2. Merge the 'agentpay' block into 'mcpServers'.");
+  console.log("  2. Merge the 'swarmapi' block into 'mcpServers'.");
   console.log("  3. Restart Claude Desktop.");
   console.log("  4. Ask: \"Pull recent SEC filings for AAPL.\"");
 
@@ -183,7 +183,7 @@ function sleep(ms: number): Promise<void> {
 function banner() {
   console.log("");
   console.log("┌──────────────────────────────────────────────────────────┐");
-  console.log("│  AgentPay setup                                          │");
+  console.log("│  SwarmApi setup                                          │");
   console.log("│  Generate a Base wallet → fund → write Claude config     │");
   console.log("└──────────────────────────────────────────────────────────┘");
   console.log("");

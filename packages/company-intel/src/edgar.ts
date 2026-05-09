@@ -1,7 +1,7 @@
-import type { DB } from "@agentpay/db";
+import type { DB } from "@swarmapi/db";
 import { fetchJsonCached, fetchTextCached } from "./cache";
 
-const USER_AGENT = process.env.EDGAR_USER_AGENT ?? "AgentPay info@agentpay.ai";
+const USER_AGENT = process.env.EDGAR_USER_AGENT ?? "SwarmApi info@swarmapi.ai";
 
 const TICKERS_URL = "https://www.sec.gov/files/company_tickers.json";
 const TTL_TICKERS_MS = 24 * 60 * 60 * 1000;

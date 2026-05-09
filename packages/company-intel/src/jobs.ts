@@ -1,4 +1,4 @@
-import type { DB } from "@agentpay/db";
+import type { DB } from "@swarmapi/db";
 import { fetchJsonCached, UpstreamError } from "./cache";
 
 const TTL_JOBS_MS = 60 * 60 * 1000;

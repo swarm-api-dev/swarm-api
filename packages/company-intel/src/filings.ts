@@ -1,4 +1,4 @@
-import type { DB } from "@agentpay/db";
+import type { DB } from "@swarmapi/db";
 import { fetchSubmissions, filingPrimaryDocUrl, padCik } from "./edgar";
 
 export interface FilingRecord {

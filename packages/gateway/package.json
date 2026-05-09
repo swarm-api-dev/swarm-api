@@ -1,5 +1,5 @@
 {
-  "name": "@agentpay/gateway",
+  "name": "@swarmapi/gateway",
   "version": "0.0.0",
   "private": true,
   "description": "x402 payment gateway: Express server that 402-gates API endpoints via @x402/express.",
@@ -13,8 +13,8 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@agentpay/company-intel": "*",
-    "@agentpay/db": "*",
+    "@swarmapi/company-intel": "*",
+    "@swarmapi/db": "*",
     "@x402/core": "^2.11.0",
     "@x402/evm": "^2.11.0",
     "@x402/express": "^2.11.0",

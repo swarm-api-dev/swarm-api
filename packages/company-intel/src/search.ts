@@ -1,4 +1,4 @@
-import type { DB } from "@agentpay/db";
+import type { DB } from "@swarmapi/db";
 import { fetchJsonCached, UpstreamError } from "./cache";
 
 const BRAVE_URL = "https://api.search.brave.com/res/v1/web/search";
@@ -64,7 +64,7 @@ export async function webSearch(
     headers: {
       "X-Subscription-Token": apiKey,
       Accept: "application/json",
-      "User-Agent": "AgentPay info@agentpay.ai",
+      "User-Agent": "SwarmApi info@swarmapi.ai",
     },
   });
 

@@ -5,7 +5,7 @@ import express, { type Request, type Response } from "express";
 import { paymentMiddleware, x402ResourceServer } from "@x402/express";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { HTTPFacilitatorClient, type RoutesConfig } from "@x402/core/server";
-import { createDb, ensureSchema, payments, upsertEndpoint } from "@agentpay/db";
+import { createDb, ensureSchema, payments, upsertEndpoint } from "@swarmapi/db";
 import {
   extractFiling,
   listFilings,
@@ -16,7 +16,7 @@ import {
   UpstreamError,
   webSearch,
   type AtsProvider,
-} from "@agentpay/company-intel";
+} from "@swarmapi/company-intel";
 
 const PORT = Number(process.env.PORT ?? 3000);
 const PLACEHOLDER_PAY_TO = "0x0000000000000000000000000000000000000001";
@@ -52,7 +52,7 @@ const USDC_ASSET = PROFILE_CFG.usdc;
 const FACILITATOR_URL = process.env.FACILITATOR_URL ?? PROFILE_CFG.facilitator;
 
 const REPO_ROOT = path.resolve(import.meta.dirname, "../../..");
-const DB_PATH = process.env.DB_PATH ?? path.resolve(REPO_ROOT, "agentpay.sqlite");
+const DB_PATH = process.env.DB_PATH ?? path.resolve(REPO_ROOT, "swarmapi.sqlite");
 const GATEWAY_URL = process.env.GATEWAY_URL ?? `http://localhost:${PORT}`;
 const BRAVE_API_KEY = process.env.BRAVE_API_KEY ?? "";
 

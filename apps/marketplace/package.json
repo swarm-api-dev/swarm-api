@@ -1,8 +1,8 @@
 {
-  "name": "@agentpay/marketplace",
+  "name": "@swarmapi/marketplace",
   "version": "0.0.0",
   "private": true,
-  "description": "Agent-facing API marketplace: catalog of x402-monetized endpoints from @agentpay/db.",
+  "description": "Agent-facing API marketplace: catalog of x402-monetized endpoints from @swarmapi/db.",
   "scripts": {
     "dev": "next dev --port 3002",
     "build": "next build",
@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@agentpay/db": "*",
+    "@swarmapi/db": "*",
     "drizzle-orm": "^0.36.0",
     "next": "^15.1.0",
     "react": "^19.0.0",

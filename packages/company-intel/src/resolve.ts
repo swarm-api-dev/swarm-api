@@ -1,4 +1,4 @@
-import type { DB } from "@agentpay/db";
+import type { DB } from "@swarmapi/db";
 import { fetchCompanyTickers, padCik } from "./edgar";
 
 export interface CompanyMatch {

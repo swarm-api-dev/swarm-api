@@ -17,13 +17,13 @@ const transport = new StdioClientTransport({
   args: ["tsx", serverEntry],
   env: {
     ...process.env,
-    AGENTPAY_PRIVATE_KEY: PRIVATE_KEY,
-    AGENTPAY_GATEWAY_URL: "http://localhost:3000",
-    AGENTPAY_MAX_SPEND_PER_REQUEST_ATOMIC: "60000",
+    SWARMAPI_PRIVATE_KEY: PRIVATE_KEY,
+    SWARMAPI_GATEWAY_URL: "http://localhost:3000",
+    SWARMAPI_MAX_SPEND_PER_REQUEST_ATOMIC: "60000",
   },
 });
 
-const client = new Client({ name: "agentpay-mcp-smoketest", version: "0.0.1" }, { capabilities: {} });
+const client = new Client({ name: "swarmapi-mcp-smoketest", version: "0.0.1" }, { capabilities: {} });
 await client.connect(transport);
 
 console.log("\n=== tools/list ===");

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata = {
-  title: "AgentPay marketplace",
+  title: "SwarmApi marketplace",
   description: "x402-monetized APIs for AI agents",
 };
 

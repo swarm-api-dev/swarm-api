@@ -1,8 +1,8 @@
 {
-  "name": "@agentpay/landing",
+  "name": "@swarmapi/landing",
   "version": "0.0.0",
   "private": true,
-  "description": "Public landing page for AgentPay.",
+  "description": "Public landing page for SwarmApi.",
   "scripts": {
     "dev": "next dev --port 3003",
     "build": "next build",
@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@agentpay/db": "*",
+    "@swarmapi/db": "*",
     "drizzle-orm": "^0.36.0",
     "next": "^15.1.0",
     "react": "^19.0.0",

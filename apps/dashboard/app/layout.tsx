@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata = {
-  title: "AgentPay dashboard",
+  title: "SwarmApi dashboard",
   description: "x402 payment events",
 };
 

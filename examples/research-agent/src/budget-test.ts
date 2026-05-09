@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { createAgentClient, BudgetExceededError } from "@agentpay/sdk";
+import { createAgentClient, BudgetExceededError } from "@swarmapi/sdk";
 import { generatePrivateKey } from "viem/accounts";
 
 const GATEWAY_URL = process.env.GATEWAY_URL ?? "http://localhost:3000";

@@ -1,5 +1,5 @@
 {
-  "name": "@agentpay/sdk",
+  "name": "@swarmapi/sdk",
   "version": "0.0.0",
   "private": true,
   "description": "Agent SDK: fetch-style client that handles HTTP 402 payment challenges with budget controls.",

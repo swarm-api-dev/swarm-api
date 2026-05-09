@@ -1,5 +1,5 @@
 import { parseHTML } from "linkedom";
-import type { DB } from "@agentpay/db";
+import type { DB } from "@swarmapi/db";
 import {
   cikFromAccession,
   fetchFilingHtml,
