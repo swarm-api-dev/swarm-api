@@ -17,11 +17,134 @@ function formatUsdc(atomic: string | null | undefined): string {
   }
 }
 
+const SITE_URL = "https://swarm-api.com";
 const DASHBOARD_URL = process.env.DASHBOARD_URL ?? "http://localhost:3001";
 const MARKETPLACE_URL = process.env.MARKETPLACE_URL ?? "http://localhost:3002";
 const WHITEPAPER_URL = "https://www.x402.org/x402-whitepaper.pdf";
 const X402_REPO_URL = "https://github.com/x402-foundation/x402";
 const NPM_URL = "https://www.npmjs.com/package/@swarmapi/mcp";
+const GITHUB_REPO_URL = "https://github.com/tuduminjo/swarm-api";
+const GATEWAY_URL = "https://api.swarm-api.com";
+
+const TOOLS: ReadonlyArray<{ name: string; description: string; priceUsd: string }> = [
+  { name: "resolve_company", description: "Resolve ticker, CIK, or company name to a canonical SEC record.", priceUsd: "0.002" },
+  { name: "list_filings", description: "List recent SEC filings filtered by form type and date.", priceUsd: "0.005" },
+  { name: "extract_filing", description: "Parse 10-K, 10-Q, or 8-K into Item-level JSON.", priceUsd: "0.05" },
+  { name: "insider_transactions", description: "Form 4 trades for officers, directors, 10% holders.", priceUsd: "0.03" },
+  { name: "company_news", description: "Recent news articles via GDELT 2.0, default 30-day window.", priceUsd: "0.02" },
+  { name: "company_jobs", description: "Open postings from public Greenhouse and Lever boards.", priceUsd: "0.01" },
+  { name: "web_search", description: "General web search via the Brave Search API.", priceUsd: "0.01" },
+  { name: "github_repo", description: "Stars, languages, license, last 10 commits, releases for a GitHub repo.", priceUsd: "0.005" },
+  { name: "package_info", description: "npm/PyPI/cargo metadata plus OSV.dev CVE scan.", priceUsd: "0.005" },
+];
+
+function structuredData() {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${SITE_URL}#organization`,
+        name: "SwarmApi",
+        url: SITE_URL,
+        sameAs: [NPM_URL, GITHUB_REPO_URL, X402_REPO_URL],
+        description:
+          "Pay-per-call commerce platform for AI agents. Production endpoints settled in USDC on Base over the x402 protocol.",
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}#website`,
+        url: SITE_URL,
+        name: "SwarmApi",
+        publisher: { "@id": `${SITE_URL}#organization` },
+        inLanguage: "en",
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": `${SITE_URL}#mcp`,
+        name: "@swarmapi/mcp",
+        applicationCategory: "DeveloperApplication",
+        operatingSystem: "macOS, Windows, Linux",
+        description:
+          "Model Context Protocol server exposing SwarmApi's nine paid endpoints as tools for Claude Desktop, Cursor, Continue, and other MCP hosts.",
+        url: NPM_URL,
+        downloadUrl: NPM_URL,
+        softwareVersion: "0.1.1",
+        offers: {
+          "@type": "Offer",
+          price: "0.00",
+          priceCurrency: "USD",
+          description: "Free MCP server. Per-call USDC pricing on the gateway.",
+        },
+      },
+      ...TOOLS.map((t) => ({
+        "@type": "Service",
+        name: t.name,
+        description: t.description,
+        provider: { "@id": `${SITE_URL}#organization` },
+        offers: {
+          "@type": "Offer",
+          price: t.priceUsd,
+          priceCurrency: "USD",
+          eligibleTransactionVolume: {
+            "@type": "PriceSpecification",
+            priceCurrency: "USDC",
+          },
+        },
+      })),
+      {
+        "@type": "FAQPage",
+        mainEntity: [
+          {
+            "@type": "Question",
+            name: "How does an AI agent pay for an SwarmApi API call?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text:
+                "The agent makes a normal HTTP request. The gateway responds 402 Payment Required with payment terms. The @swarmapi/sdk signs an EIP-3009 USDC authorization off-chain and retries with one extra header. The gateway returns structured JSON and settles the USDC payment on Base mainnet.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Do I need an API key to use SwarmApi?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text:
+                "No. There are no API keys, signups, or contracts. The only credential is a Base wallet funded with USDC.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "How do I fund the agent's wallet?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text:
+                "Three options. (1) Buy USDC by card via the Coinbase Onramp flow the setup CLI opens. (2) Send USDC on Base from any wallet you already control - MetaMask, Coinbase, Binance, Phantom, hardware wallet, corporate treasury. (3) Bridge USDC from another chain to Base via Across, the official Base bridge, or any DEX aggregator. The CLI watches the address and continues automatically once the deposit confirms.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "What does a full company due-diligence pass cost?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text:
+                "About $0.13 in USDC for one full pass calling every endpoint once. Commercial equivalents like Crunchbase Enterprise start at $20,000 per year.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Which MCP hosts work with @swarmapi/mcp?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text:
+                "Claude Desktop, Cursor, Continue, and any host that supports the Model Context Protocol. The server is a standalone stdio process started by the host.",
+            },
+          },
+        ],
+      },
+    ],
+  };
+}
 
 export default async function LandingPage() {
   const stats = await fetchStats().catch(() => ({
@@ -34,6 +157,10 @@ export default async function LandingPage() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData()) }}
+      />
       <header className="site">
         <div className="container">
           <a href="/" className="brand">

@@ -70,34 +70,36 @@ export default async function DashboardPage() {
       {recent.length === 0 ? (
         <div className="empty">No payments yet. Run the example agent to generate events.</div>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Resource</th>
-              <th>Status</th>
-              <th>Payer</th>
-              <th>Amount</th>
-              <th>Tx / Error</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recent.map((p) => (
-              <tr key={p.id}>
-                <td className="mono">{formatTime(p.createdAt)}</td>
-                <td className="mono">
-                  {p.method} {p.resource}
-                </td>
-                <td className={p.status === "settled" ? "status-settled" : "status-failed"}>
-                  {p.status}
-                </td>
-                <td className="mono">{shortAddr(p.payerAddress)}</td>
-                <td className="mono">{formatUsdc(p.amountAtomic)}</td>
-                <td className="mono">{p.txHash ? shortAddr(p.txHash) : (p.errorCode ?? "—")}</td>
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Resource</th>
+                <th>Status</th>
+                <th>Payer</th>
+                <th>Amount</th>
+                <th>Tx / Error</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {recent.map((p) => (
+                <tr key={p.id}>
+                  <td className="mono">{formatTime(p.createdAt)}</td>
+                  <td className="mono">
+                    {p.method} {p.resource}
+                  </td>
+                  <td className={p.status === "settled" ? "status-settled" : "status-failed"}>
+                    {p.status}
+                  </td>
+                  <td className="mono">{shortAddr(p.payerAddress)}</td>
+                  <td className="mono">{formatUsdc(p.amountAtomic)}</td>
+                  <td className="mono">{p.txHash ? shortAddr(p.txHash) : (p.errorCode ?? "—")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </main>
   );
