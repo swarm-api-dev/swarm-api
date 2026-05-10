@@ -38,13 +38,7 @@ export function createCdpAuthHeaders(
 
   async function ensureKey(): Promise<void> {
     if (cachedKey) return;
-    const pem = key.secret.trim();
-    if (!pem.startsWith("-----BEGIN")) {
-      throw new Error(
-        "CDP_API_KEY_SECRET must be PEM-encoded (starts with '-----BEGIN ...'). " +
-          "Copy the full block including BEGIN/END lines from the CDP dashboard.",
-      );
-    }
+    const pem = toPkcs8Pem(key.secret);
     // PKCS8 PEM headers say '-----BEGIN PRIVATE KEY-----' regardless of curve,
     // so we route through Node's KeyObject which reads the DER OID and reports
     // the actual algorithm. Then jose imports with the right alg.
@@ -59,6 +53,30 @@ export function createCdpAuthHeaders(
       );
     }
     cachedKey = await importPKCS8(pem, cachedAlg);
+  }
+
+  /**
+   * CDP hands keys out in two formats:
+   *   - Legacy: full PEM block ('-----BEGIN ... -----').
+   *   - Newer:  single-line base64-encoded PKCS8 DER (no PEM wrapper).
+   * Normalise both to a PEM string before parsing.
+   */
+  function toPkcs8Pem(raw: string): string {
+    const stripped = raw.trim();
+    if (stripped.startsWith("-----BEGIN")) return stripped;
+
+    // Treat as base64 PKCS8 DER. Accept stdandard and URL-safe alphabets;
+    // ignore whitespace; tolerate missing padding.
+    const b64 = stripped.replace(/\s+/g, "").replace(/-/g, "+").replace(/_/g, "/");
+    if (!/^[A-Za-z0-9+/]+=*$/.test(b64)) {
+      throw new Error(
+        "CDP_API_KEY_SECRET is neither a PEM block nor base64-encoded PKCS8 DER. " +
+          "Paste the value the CDP dashboard shows you verbatim.",
+      );
+    }
+    const padded = b64 + "=".repeat((4 - (b64.length % 4)) % 4);
+    const wrapped = padded.match(/.{1,64}/g)?.join("\n") ?? padded;
+    return `-----BEGIN PRIVATE KEY-----\n${wrapped}\n-----END PRIVATE KEY-----`;
   }
 
   async function mintJwt(method: "GET" | "POST", path: string): Promise<string> {
