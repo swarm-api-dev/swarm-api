@@ -671,6 +671,31 @@ pre.code {
   font-size: 13.5px;
 }
 
+ul.fund-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+ul.fund-list li {
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--green);
+  border-radius: 6px;
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+ul.fund-list li strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
 .step-body code,
 .step-title code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;

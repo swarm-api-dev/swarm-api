@@ -307,12 +307,40 @@ export default async function LandingPage() {
 
 ✓ Generated wallet: 0xAB12…CD34
 ? How would you like to fund it?
-  > Buy USDC with card via Coinbase Onramp
+  [1] Buy USDC with card via Coinbase Onramp   (recommended)
+  [2] Send USDC from another wallet            (paste address below)
+  [3] Already funded — just verify
+
+> 2
+Send any amount of USDC on Base mainnet to:
+  0xAB12…CD34
+
+Polling Base for incoming USDC...
 ✓ Detected 10.000000 USDC.
 ✓ Saved Claude Desktop config to ~/.swarmapi/claude-desktop.json`}</pre>
                 <p className="muted">
-                  No exchange account, no signups. The CLI never touches your card — Coinbase Onramp
-                  handles purchase + KYC, then deposits USDC straight to your fresh wallet.
+                  <strong>Three ways to fund — pick any one:</strong>
+                </p>
+                <ul className="fund-list">
+                  <li>
+                    <strong>Card</strong> — Coinbase Onramp opens in your browser. Handles purchase
+                    and KYC. No exchange account, no API key. USDC lands on Base.
+                  </li>
+                  <li>
+                    <strong>Any wallet you already own</strong> — the CLI prints the address and
+                    waits. Send USDC on Base from MetaMask, Coinbase, Binance, Phantom, a corporate
+                    treasury, or a hardware wallet. Anything that signs a Base transfer works. The
+                    CLI auto-detects the deposit and continues.
+                  </li>
+                  <li>
+                    <strong>Bridge or swap</strong> — already hold ETH or USDC on another chain?
+                    Bridge to Base via Across, the official Base bridge, or any DEX aggregator, then
+                    send to the printed address. CLI handles the rest.
+                  </li>
+                </ul>
+                <p className="muted">
+                  Your private key never leaves your machine. Back it up. Losing it means losing the
+                  funds.
                 </p>
               </div>
             </div>
