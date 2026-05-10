@@ -1,0 +1,54 @@
+version: 1
+name: swarmapi
+displayName: SwarmApi
+description: Pay-per-call SEC filings, company news, insider transactions, jobs, web search, GitHub repo health, and package security via x402 (USDC on Base). 9 tools, ~$0.01 average cost, no API key or subscription.
+homepage: https://swarm-api.com
+repository: https://github.com/tuduminjo/swarm-api
+icon: https://swarm-api.com/icon.png
+license: MIT
+keywords:
+  - sec
+  - edgar
+  - company-intelligence
+  - x402
+  - usdc
+  - base
+  - web-search
+  - github
+  - npm
+  - cve
+
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    required:
+      - SWARMAPI_PRIVATE_KEY
+    properties:
+      SWARMAPI_PRIVATE_KEY:
+        type: string
+        title: Base mainnet private key
+        description: 0x-prefixed 32-byte EOA private key with USDC balance on Base mainnet. The wallet is used to sign per-call payments via EIP-3009. Generate one with `npx @swarmapi/setup` if you don't have one.
+        pattern: "^0x[a-fA-F0-9]{64}$"
+        format: password
+      SWARMAPI_GATEWAY_URL:
+        type: string
+        title: Gateway URL
+        description: Override only if you self-host the gateway. Default points at the public production gateway.
+        default: https://api.swarm-api.com
+      SWARMAPI_MAX_SPEND_PER_REQUEST_ATOMIC:
+        type: string
+        title: Per-call spend cap (atomic USDC)
+        description: 6-decimal atomic USDC units. Default 100000 = $0.10. The SDK throws BudgetExceededError before signing if a server asks for more than this.
+        default: "100000"
+  commandFunction:
+    |-
+    (config) => ({
+      command: "npx",
+      args: ["-y", "@swarmapi/mcp"],
+      env: {
+        SWARMAPI_PRIVATE_KEY: config.SWARMAPI_PRIVATE_KEY,
+        SWARMAPI_GATEWAY_URL: config.SWARMAPI_GATEWAY_URL || "https://api.swarm-api.com",
+        SWARMAPI_MAX_SPEND_PER_REQUEST_ATOMIC: config.SWARMAPI_MAX_SPEND_PER_REQUEST_ATOMIC || "100000"
+      }
+    })

@@ -6,7 +6,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { BudgetExceededError, createAgentClient } from "@swarmapi/sdk";
 
 const PRIVATE_KEY = process.env.SWARMAPI_PRIVATE_KEY ?? process.env.AGENT_PRIVATE_KEY;
-const GATEWAY_URL = process.env.SWARMAPI_GATEWAY_URL ?? "http://localhost:3000";
+const GATEWAY_URL = process.env.SWARMAPI_GATEWAY_URL ?? "https://api.swarm-api.com";
 const MAX_SPEND = parseBigIntEnv(process.env.SWARMAPI_MAX_SPEND_PER_REQUEST_ATOMIC, 100_000n);
 
 if (!PRIVATE_KEY || !PRIVATE_KEY.startsWith("0x")) {

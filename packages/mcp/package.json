@@ -1,8 +1,8 @@
 {
   "name": "@swarmapi/mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
-  "description": "MCP server exposing SwarmApi company + code intelligence endpoints as tools for AI agents (Claude Desktop, Cursor, etc.).",
+  "description": "MCP server for SwarmApi: 9 pay-per-call tools for SEC filings, company news, insider transactions, jobs, web search, GitHub repos, and npm/PyPI/cargo package security. Payments settled per request in USDC on Base via x402.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,6 +13,28 @@
     "dist",
     "README.md"
   ],
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "x402",
+    "usdc",
+    "base",
+    "sec",
+    "edgar",
+    "company-intelligence",
+    "agent-tools",
+    "claude-desktop",
+    "cursor"
+  ],
+  "homepage": "https://swarm-api.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tuduminjo/swarm-api.git",
+    "directory": "packages/mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/tuduminjo/swarm-api/issues"
+  },
   "publishConfig": {
     "access": "public"
   },
