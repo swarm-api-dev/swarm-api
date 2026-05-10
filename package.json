@@ -9,8 +9,9 @@
     "examples/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build -w @swarmapi/sdk -w @swarmapi/db -w @swarmapi/company-intel -w @swarmapi/gateway --if-present",
     "build:libs": "npm run build -w @swarmapi/sdk -w @swarmapi/mcp -w @swarmapi/setup --if-present",
+    "start": "node packages/gateway/dist/index.js",
     "dev": "npm run dev --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "prepare": "npm run build -w @swarmapi/sdk --if-present"
