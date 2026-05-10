@@ -23,7 +23,9 @@ ENV NETWORK_PROFILE=base-mainnet
 ENV DB_PATH=/data/swarmapi.sqlite
 
 # Persist payments + endpoints + cache rows across container restarts.
-VOLUME ["/data"]
+# NOTE: Railway forbids the Dockerfile VOLUME directive — attach a Railway
+# Volume to /data in the service UI instead. On other Docker hosts (Fly, plain
+# Docker, etc.) you'd add: VOLUME ["/data"]
 
 EXPOSE 3000
 
