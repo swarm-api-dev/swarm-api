@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { createPrivateKey, randomBytes } from "node:crypto";
 import { SignJWT, importPKCS8, type KeyLike } from "jose";
 
 export interface CdpAuthHeaders {
@@ -45,10 +45,19 @@ export function createCdpAuthHeaders(
           "Copy the full block including BEGIN/END lines from the CDP dashboard.",
       );
     }
-    cachedAlg =
-      pem.includes("BEGIN ED25519") || pem.includes("ED25519 PRIVATE KEY") || pem.includes("Ed25519")
-        ? "EdDSA"
-        : "ES256";
+    // PKCS8 PEM headers say '-----BEGIN PRIVATE KEY-----' regardless of curve,
+    // so we route through Node's KeyObject which reads the DER OID and reports
+    // the actual algorithm. Then jose imports with the right alg.
+    const keyType = createPrivateKey(pem).asymmetricKeyType;
+    if (keyType === "ed25519") {
+      cachedAlg = "EdDSA";
+    } else if (keyType === "ec") {
+      cachedAlg = "ES256";
+    } else {
+      throw new Error(
+        `Unsupported CDP key algorithm "${keyType ?? "unknown"}". Expected ed25519 or ec (P-256).`,
+      );
+    }
     cachedKey = await importPKCS8(pem, cachedAlg);
   }
 
