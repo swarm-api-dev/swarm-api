@@ -1,6 +1,4 @@
-import { asc } from "drizzle-orm";
-import { endpoints, type Endpoint } from "@swarmapi/db";
-import { getDb } from "../lib/db";
+import { fetchEndpoints, type Endpoint } from "../lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -32,13 +30,8 @@ const res = await fetch("${url}");
 const data = await res.json();`;
 }
 
-async function loadEndpoints(): Promise<Endpoint[]> {
-  const db = getDb();
-  return db.select().from(endpoints).orderBy(asc(endpoints.name)).all();
-}
-
 export default async function MarketplacePage() {
-  const list = await loadEndpoints();
+  const list = await fetchEndpoints().catch(() => [] as Endpoint[]);
 
   return (
     <main>

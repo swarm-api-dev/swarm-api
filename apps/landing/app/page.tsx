@@ -1,6 +1,4 @@
-import { sql } from "drizzle-orm";
-import { payments, endpoints } from "@swarmapi/db";
-import { getDb } from "../lib/db";
+import { fetchStats } from "../lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -19,37 +17,19 @@ function formatUsdc(atomic: string | null | undefined): string {
   }
 }
 
-async function loadStats() {
-  const db = getDb();
-  const settled = db
-    .select({
-      count: sql<number>`COUNT(*)`,
-      sumAtomic: sql<string>`COALESCE(SUM(CAST(${payments.amountAtomic} AS INTEGER)), 0)`,
-      uniquePayers: sql<number>`COUNT(DISTINCT ${payments.payerAddress})`,
-    })
-    .from(payments)
-    .where(sql`${payments.status} = 'settled'`)
-    .all();
-  const endpointCount = db
-    .select({ count: sql<number>`COUNT(*)` })
-    .from(endpoints)
-    .all();
-
-  return {
-    settledCount: Number(settled[0]?.count ?? 0),
-    revenueAtomic: String(settled[0]?.sumAtomic ?? 0),
-    uniquePayers: Number(settled[0]?.uniquePayers ?? 0),
-    endpointCount: Number(endpointCount[0]?.count ?? 0),
-  };
-}
-
 const DASHBOARD_URL = process.env.DASHBOARD_URL ?? "http://localhost:3001";
 const MARKETPLACE_URL = process.env.MARKETPLACE_URL ?? "http://localhost:3002";
 const WHITEPAPER_URL = "https://www.x402.org/x402-whitepaper.pdf";
 const X402_REPO_URL = "https://github.com/x402-foundation/x402";
 
 export default async function LandingPage() {
-  const stats = await loadStats();
+  const stats = await fetchStats().catch(() => ({
+    settledCount: 0,
+    failedCount: 0,
+    revenueAtomic: "0",
+    uniquePayers: 0,
+    endpointCount: 0,
+  }));
 
   return (
     <>

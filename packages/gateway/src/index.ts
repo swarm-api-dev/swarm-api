@@ -6,7 +6,8 @@ import { paymentMiddleware, x402ResourceServer } from "@x402/express";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { HTTPFacilitatorClient, type RoutesConfig } from "@x402/core/server";
 import { createCdpAuthHeaders } from "./cdp-auth";
-import { createDb, ensureSchema, payments, upsertEndpoint } from "@swarmapi/db";
+import { createDb, ensureSchema, endpoints, payments, upsertEndpoint } from "@swarmapi/db";
+import { desc, sql } from "drizzle-orm";
 import {
   extractFiling,
   fetchPackageInfo,
@@ -304,6 +305,62 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json({ limit: "32kb" }));
+
+// CORS for the public read-only endpoints below — the web apps (landing,
+// dashboard, marketplace) live on different origins (Vercel subdomains) so
+// they need CORS for the cross-origin fetches. The paid /v1/companies/... and
+// /v1/filings/... endpoints don't need CORS because x402 clients are
+// non-browser HTTP clients.
+app.use((_req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  next();
+});
+
+// ---- Public, unpaid, read-only views over the operator data ----
+// These power the landing / dashboard / marketplace web apps. They expose
+// aggregate stats and the public endpoint catalog. No payment info beyond
+// what's already on-chain.
+
+app.get("/v1/stats", (_req: Request, res: Response) => {
+  const settled = db
+    .select({
+      count: sql<number>`COUNT(*)`,
+      sumAtomic: sql<string>`COALESCE(SUM(CAST(${payments.amountAtomic} AS INTEGER)), 0)`,
+      uniquePayers: sql<number>`COUNT(DISTINCT ${payments.payerAddress})`,
+    })
+    .from(payments)
+    .where(sql`${payments.status} = 'settled'`)
+    .all();
+  const failed = db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(payments)
+    .where(sql`${payments.status} = 'failed'`)
+    .all();
+  const endpointCount = db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(endpoints)
+    .all();
+  res.json({
+    settledCount: Number(settled[0]?.count ?? 0),
+    failedCount: Number(failed[0]?.count ?? 0),
+    revenueAtomic: String(settled[0]?.sumAtomic ?? 0),
+    uniquePayers: Number(settled[0]?.uniquePayers ?? 0),
+    endpointCount: Number(endpointCount[0]?.count ?? 0),
+  });
+});
+
+app.get("/v1/payments", (req: Request, res: Response) => {
+  const limit = Math.max(1, Math.min(Number(req.query.limit ?? 50), 200));
+  const rows = db.select().from(payments).orderBy(desc(payments.createdAt)).limit(limit).all();
+  res.json({ count: rows.length, payments: rows });
+});
+
+app.get("/v1/catalog", (_req: Request, res: Response) => {
+  const rows = db.select().from(endpoints).all();
+  res.json({ count: rows.length, endpoints: rows });
+});
 
 const paidRoutes: RoutesConfig = Object.fromEntries(
   ROUTES.map((r) => [

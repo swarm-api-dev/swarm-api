@@ -1,7 +1,4 @@
-import { sql } from "drizzle-orm";
-import { desc } from "drizzle-orm";
-import { payments, type Payment } from "@swarmapi/db";
-import { getDb } from "../lib/db";
+import { fetchPayments, fetchStats } from "../lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -24,40 +21,23 @@ function shortAddr(addr: string | null): string {
   return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 }
 
-function formatTime(ts: Date | null): string {
+function formatTime(ts: string | Date | null): string {
   if (!ts) return "—";
-  return ts.toISOString().replace("T", " ").slice(0, 19);
-}
-
-async function loadStats() {
-  const db = getDb();
-  const counts = db
-    .select({
-      status: payments.status,
-      count: sql<number>`COUNT(*)`,
-      sumAtomic: sql<string>`COALESCE(SUM(CAST(${payments.amountAtomic} AS INTEGER)), 0)`,
-    })
-    .from(payments)
-    .groupBy(payments.status)
-    .all();
-
-  const settled = counts.find((c) => c.status === "settled");
-  const failed = counts.find((c) => c.status === "failed");
-
-  return {
-    settledCount: Number(settled?.count ?? 0),
-    failedCount: Number(failed?.count ?? 0),
-    revenueAtomic: String(settled?.sumAtomic ?? 0),
-  };
-}
-
-async function loadRecent(limit = 50): Promise<Payment[]> {
-  const db = getDb();
-  return db.select().from(payments).orderBy(desc(payments.createdAt)).limit(limit).all();
+  const iso = typeof ts === "string" ? ts : ts.toISOString();
+  return iso.replace("T", " ").slice(0, 19);
 }
 
 export default async function DashboardPage() {
-  const [stats, recent] = await Promise.all([loadStats(), loadRecent()]);
+  const [stats, recent] = await Promise.all([
+    fetchStats().catch(() => ({
+      settledCount: 0,
+      failedCount: 0,
+      revenueAtomic: "0",
+      uniquePayers: 0,
+      endpointCount: 0,
+    })),
+    fetchPayments(50).catch(() => []),
+  ]);
   const total = stats.settledCount + stats.failedCount;
   const successRate = total === 0 ? "—" : `${((stats.settledCount / total) * 100).toFixed(0)}%`;
 
