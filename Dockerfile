@@ -17,6 +17,12 @@ COPY . .
 # better-sqlite3 builds its native binding here.
 RUN npm install --no-audit --no-fund
 
+# Build the gateway runtime chain. @swarmapi/{db,company-intel,gateway} each
+# declare "main": "dist/index.js" so they MUST be compiled before runtime.
+# The root `build` script (see package.json) is scoped to just these packages
+# plus @swarmapi/sdk, so we skip the three Next.js apps and any examples.
+RUN npm run build
+
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV NETWORK_PROFILE=base-mainnet
@@ -38,4 +44,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
 #   GITHUB_TOKEN    — for /v1/github/repo (optional; falls back to 60 req/hr)
 #   FACILITATOR_URL — override per-profile default (optional)
 
-CMD ["npx", "tsx", "packages/gateway/src/index.ts"]
+# Run with tsx (already installed as a devDep, resolved via node_modules/.bin).
+# Workspace deps @swarmapi/{db,company-intel,sdk} were compiled above so their
+# "main": "dist/index.js" entries resolve cleanly.
+CMD ["node_modules/.bin/tsx", "packages/gateway/src/index.ts"]
