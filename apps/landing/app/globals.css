@@ -40,6 +40,19 @@ a {
   padding: 0 24px;
 }
 
+/* Prevent overflow on every element with long content (URLs, code) */
+pre,
+code {
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+img,
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
 /* Header */
 
 header.site {
@@ -86,6 +99,18 @@ nav.site-nav {
   gap: 24px;
   font-size: 13px;
   color: var(--muted);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+nav.site-nav::-webkit-scrollbar {
+  display: none;
+}
+
+nav.site-nav a {
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 nav.site-nav a:hover {
@@ -136,6 +161,22 @@ p.hero-subtitle {
   font-size: 17px;
   color: var(--muted);
   line-height: 1.5;
+}
+
+p.hero-foot {
+  margin: 24px auto 0;
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 520px;
+}
+
+p.hero-foot a {
+  color: var(--green);
+  border-bottom: 1px dotted rgba(94, 194, 122, 0.4);
+}
+
+p.hero-foot a:hover {
+  border-bottom-color: var(--green);
 }
 
 .cta-row {
@@ -690,15 +731,25 @@ footer .links {
 
 /* Responsive */
 
-@media (max-width: 760px) {
-  h1.hero-title {
-    font-size: 36px;
+/* Tablet — single-column hero rhythm, smaller padding */
+@media (max-width: 900px) {
+  .container {
+    padding: 0 20px;
   }
   section.hero {
-    padding: 64px 0 48px;
+    padding: 72px 0 56px;
+  }
+  h1.hero-title {
+    font-size: 40px;
+  }
+  p.hero-subtitle {
+    font-size: 16px;
   }
   section.block {
-    padding: 56px 0;
+    padding: 64px 0;
+  }
+  h2.section-title {
+    font-size: 28px;
   }
   .stats-card {
     grid-template-columns: 1fr 1fr;
@@ -706,12 +757,161 @@ footer .links {
   .live-pill {
     grid-column: 1 / -1;
     border-bottom: 1px solid var(--border);
+    justify-content: center;
   }
   .stat {
     border-left: none;
     border-right: 1px solid var(--border);
   }
+  .stat:nth-child(odd) {
+    border-right: 1px solid var(--border);
+  }
+  .stat:nth-child(even) {
+    border-right: none;
+  }
+  .audiences {
+    grid-template-columns: 1fr;
+  }
   nav.site-nav {
+    gap: 16px;
+  }
+  .quickstart {
+    padding: 28px 20px;
+  }
+}
+
+/* Phone — collapse everything, tighten type */
+@media (max-width: 520px) {
+  html,
+  body {
+    font-size: 14px;
+  }
+  .container {
+    padding: 0 16px;
+  }
+  header.site .container {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    gap: 12px;
+  }
+  .brand {
+    font-size: 14px;
+  }
+  nav.site-nav {
+    gap: 14px;
+    font-size: 12.5px;
+  }
+  section.hero {
+    padding: 48px 0 40px;
+    text-align: left;
+  }
+  .eyebrow {
+    font-size: 11px;
+    padding: 3px 10px;
+    margin-bottom: 16px;
+  }
+  h1.hero-title {
+    font-size: 28px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    text-align: left;
+  }
+  p.hero-subtitle {
+    font-size: 15px;
+    margin: 0 0 24px;
+    text-align: left;
+  }
+  p.hero-foot {
+    text-align: left;
+    margin-top: 20px;
+  }
+  .cta-row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  .btn {
+    justify-content: center;
+    padding: 12px 18px;
+    width: 100%;
+  }
+  section.block {
+    padding: 48px 0;
+  }
+  h2.section-title {
+    font-size: 24px;
+    line-height: 1.2;
+  }
+  p.section-lede {
+    font-size: 14.5px;
+    margin-bottom: 28px;
+  }
+  /* Single-column stats on phones — every row gets its own card */
+  .stats-card {
+    grid-template-columns: 1fr;
+  }
+  .stat {
+    border-right: none !important;
+    border-bottom: 1px solid var(--border);
+  }
+  .stat:last-child {
+    border-bottom: none;
+  }
+  .live-pill {
+    border-bottom: 1px solid var(--border);
+    justify-content: flex-start;
+  }
+  /* Tool list: stack name/price on top, description below */
+  ul.tool-list li {
+    grid-template-columns: 1fr auto;
+    padding: 10px 12px;
+  }
+  .tool-name {
+    font-size: 12.5px;
+  }
+  .tool-desc {
+    font-size: 12px;
+  }
+  .audience,
+  .why-card,
+  .flow-step {
+    padding: 20px;
+  }
+  .quickstart {
+    padding: 24px 18px;
+  }
+  .quickstart h2 {
+    font-size: 20px;
+  }
+  .install-step {
+    grid-template-columns: 32px 1fr;
+    gap: 12px;
+  }
+  .step-num {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+  }
+  /* Force code blocks to stay inside the viewport */
+  pre.code {
+    font-size: 11.5px;
+    padding: 12px;
+  }
+  pre.config-block {
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .install-ctas {
+    flex-direction: column;
+  }
+  footer.site .container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  footer .links {
+    flex-wrap: wrap;
     gap: 14px;
   }
 }

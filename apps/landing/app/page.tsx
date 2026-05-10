@@ -21,6 +21,7 @@ const DASHBOARD_URL = process.env.DASHBOARD_URL ?? "http://localhost:3001";
 const MARKETPLACE_URL = process.env.MARKETPLACE_URL ?? "http://localhost:3002";
 const WHITEPAPER_URL = "https://www.x402.org/x402-whitepaper.pdf";
 const X402_REPO_URL = "https://github.com/x402-foundation/x402";
+const NPM_URL = "https://www.npmjs.com/package/@swarmapi/mcp";
 
 export default async function LandingPage() {
   const stats = await fetchStats().catch(() => ({
@@ -42,11 +43,11 @@ export default async function LandingPage() {
           <nav className="site-nav">
             <a href={MARKETPLACE_URL}>Marketplace</a>
             <a href={DASHBOARD_URL}>Dashboard</a>
+            <a href={NPM_URL} target="_blank" rel="noreferrer">
+              npm
+            </a>
             <a href={WHITEPAPER_URL} target="_blank" rel="noreferrer">
               Whitepaper
-            </a>
-            <a href={X402_REPO_URL} target="_blank" rel="noreferrer">
-              x402 spec
             </a>
           </nav>
         </div>
@@ -54,26 +55,32 @@ export default async function LandingPage() {
 
       <section className="hero">
         <div className="container">
-          <span className="eyebrow">MCP server · Base · USDC</span>
+          <span className="eyebrow">Live · x402 · USDC on Base mainnet</span>
           <h1 className="hero-title">
-            Real-world data as MCP tools your <span className="accent">agent calls itself</span>.
+            The first API marketplace your AI agent can{" "}
+            <span className="accent">buy from on its own.</span>
           </h1>
           <p className="hero-subtitle">
-            Nine paid endpoints — SEC filings, news, hiring, insider trades, web search, GitHub
-            repos, package metadata. Drop a config block into Claude Desktop, fund a Base wallet,
-            and your agent pays per call in USDC. No API keys, no signups, no contracts.
+            Nine production endpoints — SEC filings, real-time company news, insider trades,
+            hiring signals, web search, GitHub health, package CVEs — settled per call in USDC on
+            Base. No API keys, no contracts, no rate-limit emails. Drop the MCP server into
+            Claude Desktop, fund a wallet, ship.
           </p>
           <div className="cta-row">
             <a href="#install" className="btn btn-primary">
-              Install for Claude Desktop →
+              Install in 60 seconds →
             </a>
             <a href={MARKETPLACE_URL} className="btn">
-              API catalog
+              Browse the catalog
             </a>
             <a href={DASHBOARD_URL} className="btn">
-              Live usage
+              Live payments
             </a>
           </div>
+          <p className="hero-foot">
+            Built on the <a href={X402_REPO_URL} target="_blank" rel="noreferrer">x402 protocol</a>{" "}
+            Coinbase shipped in 2025. Get in before the agents do.
+          </p>
         </div>
       </section>
 
@@ -97,7 +104,7 @@ export default async function LandingPage() {
               <div className="stat-value">{stats.uniquePayers}</div>
             </div>
             <div className="stat">
-              <div className="stat-label">Endpoints listed</div>
+              <div className="stat-label">Endpoints live</div>
               <div className="stat-value">{stats.endpointCount}</div>
             </div>
           </div>
@@ -106,37 +113,43 @@ export default async function LandingPage() {
 
       <section className="block">
         <div className="container">
-          <div className="section-eyebrow">Why agents pay for this</div>
-          <h2 className="section-title">The data your agent needs after the training cutoff.</h2>
+          <div className="section-eyebrow">Why this matters now</div>
+          <h2 className="section-title">
+            The data layer for agentic commerce. Most teams haven't noticed it shipped yet.
+          </h2>
           <p className="section-lede">
-            LLMs already know last year's facts. Agents fail on this quarter's filings, this week's
-            news, today's job postings. SwarmApi packages public sources into one HTTP surface so
-            that gap closes in a single paid call.
+            In 2025 Coinbase released x402 — a single HTTP status code that lets a server charge a
+            client for one request, settled on-chain in seconds. Every AI agent vendor is rebuilding
+            their tool stack on top of it. SwarmApi is what live agent traffic looks like on day
+            one: production endpoints, real USDC settlement, zero subscriptions.
           </p>
           <div className="why-grid">
             <div className="why-card">
-              <div className="icon">⏱</div>
-              <h3>Fresh past the cutoff</h3>
+              <div className="icon">$</div>
+              <h3>1,000× cheaper than a contract</h3>
               <p>
-                SEC filings within minutes of EDGAR publication. News indexed every 15 minutes.
-                Job boards refreshed hourly. The agent never has to ask "is this still current?"
+                A full company due-diligence pass — resolve, list filings, parse 10-K, news,
+                insiders, jobs, GitHub — runs about <strong>$0.13</strong> in USDC. Crunchbase
+                Enterprise starts at <strong>$20,000/year</strong> for less coverage. Run the math
+                on a thousand companies.
+              </p>
+            </div>
+            <div className="why-card">
+              <div className="icon">⏱</div>
+              <h3>Past your model's training cutoff</h3>
+              <p>
+                EDGAR filings indexed within minutes of publication. GDELT news refreshed every 15
+                minutes. Job boards crawled hourly. Your agent never has to ask "is this still
+                current" — the answer is always yes.
               </p>
             </div>
             <div className="why-card">
               <div className="icon">{`{ }`}</div>
-              <h3>Structured for agents</h3>
+              <h3>Built for tool-calling, not humans</h3>
               <p>
-                10-K sections as JSON keys. News with extracted entities and sentiment. Job
-                postings with parsed seniority and stack. Built for tool-calling, not for humans
-                with a browser.
-              </p>
-            </div>
-            <div className="why-card">
-              <div className="icon">¢</div>
-              <h3>Pay only for what you read</h3>
-              <p>
-                Per-call pricing from $0.002 to $0.05 in USDC. A full company due-diligence pass
-                runs about $0.10. Crunchbase charges $20k a year for less.
+                10-K sections as JSON keys. Form 4 trades decoded from XML. News with extracted
+                entities. Job postings with parsed seniority and stack. Designed for an LLM to
+                consume in a single round-trip — not for a person with a browser tab.
               </p>
             </div>
           </div>
@@ -146,31 +159,35 @@ export default async function LandingPage() {
       <section className="block">
         <div className="container">
           <div className="section-eyebrow">How it works</div>
-          <h2 className="section-title">Three steps, one HTTP retry.</h2>
+          <h2 className="section-title">Three steps, one HTTP retry. That's the protocol.</h2>
           <p className="section-lede">
-            The whole protocol fits in a sequence diagram. Your code only deals with steps 1 and 3.
+            x402 is small enough to read in five minutes and works with any client that can sign
+            an EIP-3009 USDC authorization. The MCP server handles every byte of it.
           </p>
           <div className="flow">
             <div className="flow-step">
               <div className="num">1</div>
-              <h3>Agent asks a question</h3>
-              <p>Plain HTTP request to any of the 9 endpoints.</p>
-              <code>GET /v1/github/repo?slug=facebook/react</code>
+              <h3>Agent calls a tool</h3>
+              <p>Plain HTTP GET or POST to one of the nine endpoints.</p>
+              <code>GET /v1/companies/filings?id=0000320193</code>
             </div>
             <div className="flow-step">
               <div className="num">2</div>
-              <h3>Server returns 402</h3>
-              <p>The gateway answers with payment terms — amount, asset, recipient, network.</p>
+              <h3>Gateway returns 402</h3>
+              <p>
+                Payment terms come back in the response: amount, asset, recipient address, chain.
+                Six decimals of USDC, settled on Base mainnet.
+              </p>
               <code>402 Payment Required</code>
             </div>
             <div className="flow-step">
               <div className="num">3</div>
-              <h3>MCP server signs & retries</h3>
+              <h3>SDK signs and retries</h3>
               <p>
-                @swarmapi/mcp signs an EIP-3009 USDC authorization, retries with one header, returns
-                the JSON to your agent — no protocol code in the agent loop.
+                @swarmapi/sdk signs the USDC authorization off-chain, retries with one header, gets
+                the structured JSON back. The facilitator settles on-chain in the background.
               </p>
-              <code>200 OK + structured JSON</code>
+              <code>200 OK · structured JSON</code>
             </div>
           </div>
         </div>
@@ -179,19 +196,21 @@ export default async function LandingPage() {
       <section className="block">
         <div className="container">
           <div className="section-eyebrow">What you can ask</div>
-          <h2 className="section-title">Nine tools, one wallet.</h2>
+          <h2 className="section-title">Nine tools. One wallet. Real signals.</h2>
           <p className="section-lede">
-            Each is an MCP tool for Claude Desktop / Cursor / any MCP host, and a plain x402 HTTP
-            endpoint for everyone else. Sources are public — SEC EDGAR, GDELT, Greenhouse, Lever,
-            GitHub, npm/PyPI/cargo, OSV.dev, Brave Search — engineered into JSON agents can consume.
+            Each tool is an MCP function for Claude Desktop / Cursor / Continue, and a plain HTTP
+            endpoint for everything else. Sources: SEC EDGAR, GDELT 2.0, Greenhouse, Lever,
+            GitHub, npm, PyPI, cargo, OSV.dev, Brave Search — packaged into the JSON your agent
+            actually needs.
           </p>
           <div className="audiences">
             <article className="audience">
               <span className="tag tag-providers">SEC + insiders</span>
-              <h3>From ticker to risk factors to officer trades.</h3>
+              <h3>Ticker to risk factors to CEO trades.</h3>
               <p>
-                EDGAR is free and comprehensive but XBRL-shaped. We resolve tickers, list filings,
-                parse 10-K/10-Q/8-K filings into per-Item JSON, and decode Form 4 insider trades.
+                EDGAR is free and the source of truth, but XBRL-shaped and slow to parse. We resolve
+                tickers, list filings, extract 10-K/10-Q/8-K Items as JSON, and decode every Form 4
+                insider trade for officers, directors, and 10% holders.
               </p>
               <ul className="tool-list">
                 <li>
@@ -207,7 +226,7 @@ export default async function LandingPage() {
                 <li>
                   <code className="tool-name">extract_filing</code>
                   <span className="tool-price">$0.05</span>
-                  <span className="tool-desc">10-K / 10-Q / 8-K → Item-level structured JSON.</span>
+                  <span className="tool-desc">10-K / 10-Q / 8-K parsed to Item-level JSON.</span>
                 </li>
                 <li>
                   <code className="tool-name">insider_transactions</code>
@@ -220,24 +239,25 @@ export default async function LandingPage() {
               <span className="tag tag-agents">Real-time signals</span>
               <h3>What the model couldn't memorise.</h3>
               <p>
-                GDELT 2.0 indexes most of the world's news every 15 minutes. Public Greenhouse and
-                Lever boards expose hiring activity. Brave Search covers everything else.
+                GDELT 2.0 indexes most of the world's news every 15 minutes. Public ATS boards on
+                Greenhouse and Lever expose hiring activity. Brave Search covers the long tail.
+                Every signal is fresher than your model's cutoff.
               </p>
               <ul className="tool-list">
                 <li>
                   <code className="tool-name">company_news</code>
                   <span className="tool-price">$0.02</span>
-                  <span className="tool-desc">Recent articles via GDELT, default 30-day window.</span>
+                  <span className="tool-desc">GDELT 2.0 articles, default 30-day window.</span>
                 </li>
                 <li>
                   <code className="tool-name">company_jobs</code>
                   <span className="tool-price">$0.01</span>
-                  <span className="tool-desc">Open postings from Greenhouse + Lever boards.</span>
+                  <span className="tool-desc">Open postings on Greenhouse + Lever.</span>
                 </li>
                 <li>
                   <code className="tool-name">web_search</code>
                   <span className="tool-price">$0.01</span>
-                  <span className="tool-desc">General web search via the Brave Search API.</span>
+                  <span className="tool-desc">General web search via Brave.</span>
                 </li>
               </ul>
             </article>
@@ -245,9 +265,9 @@ export default async function LandingPage() {
               <span className="tag tag-code">Code intelligence</span>
               <h3>What your coding agent needs to ship safely.</h3>
               <p>
-                The data Cursor and Claude Code reach for every prompt: is this repo maintained? Is
-                this dependency current and free of CVEs? GitHub + npm + PyPI + cargo + OSV.dev,
-                bundled into single calls.
+                Every Cursor and Claude Code prompt is bottlenecked on the same question: is this
+                dependency maintained, current, and free of CVEs? GitHub plus npm, PyPI, cargo, and
+                OSV.dev — bundled into single calls so the agent stops guessing.
               </p>
               <ul className="tool-list">
                 <li>
@@ -262,8 +282,8 @@ export default async function LandingPage() {
                 </li>
               </ul>
               <p className="callout">
-                A full due-diligence pass — every tool fired once — costs about{" "}
-                <strong>$0.13</strong> per company.
+                Full due-diligence pass — every tool once — runs about <strong>$0.13</strong> per
+                company. Compare your current data bill.
               </p>
             </article>
           </div>
@@ -273,10 +293,10 @@ export default async function LandingPage() {
       <section className="block" id="install">
         <div className="container">
           <div className="quickstart">
-            <h2>Drop into Claude Desktop in one command.</h2>
+            <h2>Live in 60 seconds.</h2>
             <p>
-              Generate a Base wallet, fund it with a credit card via Coinbase Onramp, write the
-              Claude Desktop config — all from one CLI. Then restart Claude and ask anything.
+              Generate a Base wallet, fund it via Coinbase Onramp, write the Claude Desktop config —
+              one CLI, no exchange account, no API key signup. Then restart Claude and ask anything.
             </p>
 
             <div className="install-step">
@@ -291,8 +311,8 @@ export default async function LandingPage() {
 ✓ Detected 10.000000 USDC.
 ✓ Saved Claude Desktop config to ~/.swarmapi/claude-desktop.json`}</pre>
                 <p className="muted">
-                  No API keys, no signups. The CLI never touches your card — the Coinbase-hosted
-                  Onramp page handles purchase + KYC, then deposits USDC to your fresh wallet.
+                  No exchange account, no signups. The CLI never touches your card — Coinbase Onramp
+                  handles purchase + KYC, then deposits USDC straight to your fresh wallet.
                 </p>
               </div>
             </div>
@@ -303,9 +323,9 @@ export default async function LandingPage() {
                 <p className="step-title">Merge into Claude Desktop config and restart.</p>
                 <p className="muted">
                   Open <code>~/Library/Application Support/Claude/claude_desktop_config.json</code>{" "}
-                  (or <code>%APPDATA%\Claude\</code> on Windows), paste the <code>swarmapi</code>{" "}
-                  block from <code>~/.swarmapi/claude-desktop.json</code> into{" "}
-                  <code>mcpServers</code>, and restart Claude Desktop.
+                  (macOS) or <code>%APPDATA%\Claude\</code> (Windows). Paste the{" "}
+                  <code>swarmapi</code> block from <code>~/.swarmapi/claude-desktop.json</code> into{" "}
+                  <code>mcpServers</code>. Restart Claude.
                 </p>
               </div>
             </div>
@@ -318,9 +338,10 @@ export default async function LandingPage() {
                   <em>"Pull the latest 8-K filings for AAPL and summarise the material events."</em>
                 </p>
                 <p className="muted">
-                  Claude picks the right tools (<code>resolve_company</code> →{" "}
-                  <code>list_filings</code> → <code>extract_filing</code>) and pays per call.
-                  Default budget cap is $0.10 per request — agent stops if it tries to exceed it.
+                  Claude chains the right tools — <code>resolve_company</code> →{" "}
+                  <code>list_filings</code> → <code>extract_filing</code> — and pays per call.
+                  Default budget cap is $0.10 per request; agent refuses to sign anything above
+                  that.
                 </p>
               </div>
             </div>
@@ -340,10 +361,13 @@ const filings = (await res.json()).filings;`}</pre>
 
             <div className="cta-row install-ctas">
               <a href={MARKETPLACE_URL} className="btn btn-primary">
-                See the API catalog
+                See the API catalog →
+              </a>
+              <a href={NPM_URL} target="_blank" rel="noreferrer" className="btn">
+                @swarmapi/mcp on npm
               </a>
               <a href={X402_REPO_URL} target="_blank" rel="noreferrer" className="btn">
-                x402-foundation on GitHub
+                x402 spec
               </a>
             </div>
           </div>
@@ -353,15 +377,15 @@ const filings = (await res.json()).filings;`}</pre>
       <footer className="site">
         <div className="container">
           <div>
-            Built on the{" "}
-            <a href={WHITEPAPER_URL} target="_blank" rel="noreferrer">
-              x402 protocol
-            </a>{" "}
-            · USDC settlement on Base
+            Built on <a href={WHITEPAPER_URL} target="_blank" rel="noreferrer">x402</a> ·
+            USDC settlement on Base mainnet · MIT license
           </div>
           <div className="links">
             <a href={MARKETPLACE_URL}>Marketplace</a>
             <a href={DASHBOARD_URL}>Dashboard</a>
+            <a href={NPM_URL} target="_blank" rel="noreferrer">
+              npm
+            </a>
             <a href={WHITEPAPER_URL} target="_blank" rel="noreferrer">
               Whitepaper
             </a>
