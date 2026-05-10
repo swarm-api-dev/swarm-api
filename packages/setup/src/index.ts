@@ -11,7 +11,7 @@ import open from "open";
 
 const CDP_PROJECT_ID = "ca67d8b0-2675-4286-b036-e090af3cc689";
 const USDC_BASE_MAINNET = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" as const;
-const DEFAULT_GATEWAY = process.env.SWARMAPI_GATEWAY_URL ?? "https://api.swarmapi.ai";
+const DEFAULT_GATEWAY = process.env.SWARMAPI_GATEWAY_URL ?? "https://api.swarm-api.com";
 const POLL_INTERVAL_MS = 5_000;
 
 const ERC20_BALANCE_ABI = [

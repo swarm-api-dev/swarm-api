@@ -6,7 +6,7 @@ import { listFilings } from "./filings";
 
 const TTL_FORM4_INDEX_MS = 7 * 24 * 60 * 60 * 1000;
 const TTL_FORM4_XML_MS = 7 * 24 * 60 * 60 * 1000;
-const EDGAR_HEADERS = { "User-Agent": "SwarmApi info@swarmapi.ai" } as const;
+const EDGAR_HEADERS = { "User-Agent": "SwarmApi info@swarm-api.com" } as const;
 
 const TRANSACTION_CODES: Record<string, string> = {
   P: "Open-market purchase",

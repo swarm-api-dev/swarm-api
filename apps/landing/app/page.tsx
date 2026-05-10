@@ -334,7 +334,7 @@ const fetch = createAgentClient({
 });
 
 const res = await fetch(
-  "https://api.swarmapi.ai/v1/companies/filings?id=0000320193"
+  "https://api.swarm-api.com/v1/companies/filings?id=0000320193"
 );
 const filings = (await res.json()).filings;`}</pre>
 

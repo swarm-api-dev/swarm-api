@@ -64,7 +64,7 @@ export async function webSearch(
     headers: {
       "X-Subscription-Token": apiKey,
       Accept: "application/json",
-      "User-Agent": "SwarmApi info@swarmapi.ai",
+      "User-Agent": "SwarmApi info@swarm-api.com",
     },
   });
 

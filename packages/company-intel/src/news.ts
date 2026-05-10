@@ -67,7 +67,7 @@ export async function listNews(
 
   const url = `${GDELT_DOC_URL}?${params.toString()}`;
   const data = await fetchJsonCached<GdeltResponse>(db, url, TTL_NEWS_MS, {
-    headers: { "User-Agent": "SwarmApi info@swarmapi.ai" },
+    headers: { "User-Agent": "SwarmApi info@swarm-api.com" },
   });
 
   const articles: NewsArticle[] = (data.articles ?? []).map((a) => ({

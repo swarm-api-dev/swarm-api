@@ -4,7 +4,7 @@ import { fetchJsonCached, UpstreamError } from "./cache";
 const TTL_PKG_MS = 60 * 60 * 1000;
 const TTL_OSV_MS = 6 * 60 * 60 * 1000;
 const TTL_DOWNLOADS_MS = 24 * 60 * 60 * 1000;
-const UA = "SwarmApi info@swarmapi.ai";
+const UA = "SwarmApi info@swarm-api.com";
 
 export type PackageRegistry = "npm" | "pypi" | "cargo";
 

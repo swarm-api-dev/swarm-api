@@ -3,7 +3,7 @@ import { fetchJsonCached, UpstreamError } from "./cache";
 
 const TTL_REPO_META_MS = 60 * 60 * 1000;
 const TTL_REPO_LISTS_MS = 30 * 60 * 1000;
-const UA = "SwarmApi info@swarmapi.ai";
+const UA = "SwarmApi info@swarm-api.com";
 
 export interface GitHubRepoCommit {
   sha: string;
