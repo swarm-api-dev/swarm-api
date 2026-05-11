@@ -1,8 +1,27 @@
 {
   "name": "@swarmapi/setup",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
-  "description": "Interactive CLI: generate a Base wallet, fund it via Coinbase Onramp, and write a Claude Desktop MCP config block.",
+  "description": "One-shot CLI for SwarmApi: generate or import a Base wallet (hex or BIP-39), fund via Coinbase Onramp, and write an MCP config block for Claude Desktop / Cursor / Cline / Zed.",
+  "keywords": [
+    "swarmapi",
+    "x402",
+    "mcp",
+    "model-context-protocol",
+    "base",
+    "usdc",
+    "ai-agents",
+    "wallet"
+  ],
+  "homepage": "https://swarm-api.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tuduminjo/swarm-api.git",
+    "directory": "packages/setup"
+  },
+  "bugs": {
+    "url": "https://github.com/tuduminjo/swarm-api/issues"
+  },
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

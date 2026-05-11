@@ -1,0 +1,135 @@
+# @swarmapi/setup
+
+One-shot CLI for [SwarmApi](https://swarm-api.com). Generates **or imports** a Base wallet, optionally funds it via [Coinbase Onramp](https://www.coinbase.com/onramp), polls for the USDC deposit, and writes a ready-to-paste MCP config block for Claude Desktop, Cursor, Cline, Zed, or any other MCP client.
+
+The whole flow runs without any signups, API keys, or accounts. Just `npx` it.
+
+```bash
+npx -y @swarmapi/setup
+```
+
+That's it. The CLI walks you through the rest.
+
+---
+
+## What it produces
+
+Two files, both in `~/.swarmapi/` with `chmod 600`:
+
+| File | Contents |
+| --- | --- |
+| `wallet.json` | Address, private key, network, creation timestamp. The single source of truth for your agent's hot wallet. |
+| `claude-desktop.json` | A drop-in MCP `mcpServers.swarmapi` block referencing the key above, the gateway URL, and a per-call spend ceiling. Paste it into your client's config. |
+
+The key is persisted **immediately after generation, before any network calls** — Ctrl-C during balance polling is always safe.
+
+---
+
+## Flows
+
+### 1. Generate fresh + Onramp (default)
+
+```bash
+npx -y @swarmapi/setup
+```
+
+Generates a new Base wallet, opens Coinbase Onramp pre-filled for $5 USDC on Base, polls the wallet until the deposit lands, prints the MCP config block, and reminds you to back up the private key.
+
+### 2. Bring your own private key
+
+```bash
+npx -y @swarmapi/setup --key 0xYOUR_PRIVATE_KEY
+```
+
+Imports an existing Base EOA. Skips Onramp (you presumably already funded it). Still polls for the USDC balance unless you pass `--no-poll`.
+
+### 3. Bring your own BIP-39 mnemonic
+
+```bash
+npx -y @swarmapi/setup --mnemonic "word1 word2 word3 ... word12"
+```
+
+Derives the address at the standard Ethereum path `m/44'/60'/0'/0/0`. Accepts 12 or 24-word mnemonics.
+
+### 4. Reuse a previously-generated wallet
+
+```bash
+npx -y @swarmapi/setup --reuse
+```
+
+Loads `~/.swarmapi/wallet.json` and re-emits the MCP config block. Useful after changing gateway URL or spend ceiling.
+
+### 5. Testnet (Base Sepolia)
+
+```bash
+npx -y @swarmapi/setup --testnet
+```
+
+Targets Base Sepolia + the [Circle USDC faucet](https://faucet.circle.com/). Good for development.
+
+### 6. Scripted / non-interactive
+
+```bash
+npx -y @swarmapi/setup --json --no-poll
+```
+
+Skips every interactive prompt, generates a wallet, prints a single JSON object to stdout, and exits. Perfect for CI or one-shot agent provisioning.
+
+---
+
+## All flags
+
+```
+-h, --help                 Show usage.
+-v, --version              Print version.
+    --reuse                Reuse the wallet at ~/.swarmapi/wallet.json.
+    --key <hex>            Import a 0x-prefixed 32-byte private key.
+    --mnemonic "..."       Import a 12 or 24-word BIP-39 mnemonic.
+    --testnet              Use Base Sepolia instead of Base mainnet.
+    --no-poll              Skip on-chain balance polling.
+    --no-open              Don't auto-open the browser.
+    --dry-run              Generate wallet + config, skip Onramp and polling.
+    --json                 Emit a single JSON object (no prompts).
+    --gateway <url>        SwarmApi gateway URL (default: https://api.swarm-api.com).
+    --max-spend <atomic>   Per-call USDC ceiling, atomic 6-dec USDC (default: 100000 = $0.10).
+    --out-dir <path>       Where to write wallet.json and claude-desktop.json.
+```
+
+Environment fallbacks (used when the matching flag isn't passed):
+
+| Env var | Maps to |
+| --- | --- |
+| `SWARMAPI_GATEWAY_URL` | `--gateway` |
+| `SWARMAPI_MAX_SPEND_PER_REQUEST_ATOMIC` | `--max-spend` |
+
+---
+
+## Client config paths
+
+| Client | Location |
+| --- | --- |
+| Claude Desktop (macOS) | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Claude Desktop (Windows) | `%APPDATA%\Claude\claude_desktop_config.json` |
+| Claude Desktop (Linux) | `~/.config/Claude/claude_desktop_config.json` |
+| Cursor | `~/.cursor/mcp.json` |
+| Cline | VS Code → Cline extension settings → MCP servers |
+| Zed | `~/.config/zed/settings.json` (`context_servers`) |
+
+Paste the `swarmapi` object from `~/.swarmapi/claude-desktop.json` into the host's `mcpServers` (or `context_servers` for Zed) and restart.
+
+---
+
+## Security model
+
+- The wallet is a Base EOA. The CLI uses [viem](https://viem.sh/) to generate / derive / sign — no custom crypto.
+- The private key sits in `~/.swarmapi/wallet.json` with `chmod 600` (POSIX). On Windows, the file inherits the parent directory ACL. Treat the directory as you would `~/.ssh/`.
+- Use a **fresh hot wallet** — don't import your main mainnet treasury. The MCP server has the key in process memory whenever it runs.
+- Cap your spend two ways:
+  - `--max-spend` (refuses any 402 challenge above this per-call ceiling, even if signed accidentally).
+  - The wallet's USDC balance itself (an empty wallet can't sign for anything).
+
+---
+
+## License
+
+MIT.

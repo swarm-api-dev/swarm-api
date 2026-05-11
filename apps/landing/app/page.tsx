@@ -432,42 +432,60 @@ export default async function LandingPage() {
                 <p className="step-title">Run the setup CLI:</p>
                 <pre className="code config-block">{`$ npx -y @swarmapi/setup
 
+Wallet source:
+  [1] Generate a fresh Base wallet   (recommended)
+  [2] Use an existing private key    (0x-prefixed hex)
+  [3] Use an existing BIP-39 mnemonic (12 or 24 words)
+
+> 1
 ✓ Generated wallet: 0xAB12…CD34
-? How would you like to fund it?
-  [1] Buy USDC with card via Coinbase Onramp   (recommended)
-  [2] Send USDC from another wallet            (paste address below)
-  [3] Already funded — just verify
+✓ Wallet saved to ~/.swarmapi/wallet.json (chmod 600)
+
+How would you like to fund the wallet?
+  [1] Buy USDC with card via Coinbase Onramp   (recommended, $5 preset)
+  [2] Send USDC from another wallet            (any Base-compatible)
+  [3] Skip — I'll fund it later
 
 > 2
 Send any amount of USDC on Base mainnet to:
   0xAB12…CD34
 
-Polling Base for incoming USDC...
+Polling Base mainnet for USDC balance (Ctrl-C is safe — wallet saved):
 ✓ Detected 10.000000 USDC.
-✓ Saved Claude Desktop config to ~/.swarmapi/claude-desktop.json`}</pre>
+✓ MCP config written to ~/.swarmapi/claude-desktop.json`}</pre>
+                <p className="muted">
+                  <strong>Bring your own wallet, or generate a fresh one.</strong> The CLI accepts a
+                  raw private key (<code>--key 0x...</code>), a 12 or 24-word BIP-39 mnemonic
+                  (<code>--mnemonic "..."</code>), or generates one for you. The key is written to{" "}
+                  <code>~/.swarmapi/wallet.json</code> (chmod 600) <em>before</em> any network
+                  call — Ctrl-C during polling is always safe.
+                </p>
                 <p className="muted">
                   <strong>Three ways to fund — pick any one:</strong>
                 </p>
                 <ul className="fund-list">
                   <li>
-                    <strong>Card</strong> — Coinbase Onramp opens in your browser. Handles purchase
-                    and KYC. No exchange account, no API key. USDC lands on Base.
+                    <strong>Card</strong> — Coinbase Onramp opens in your browser, pre-filled for
+                    $5 of USDC on Base. No exchange account, no API key. USDC lands directly in
+                    the wallet you just generated.
                   </li>
                   <li>
                     <strong>Any wallet you already own</strong> — the CLI prints the address and
-                    waits. Send USDC on Base from MetaMask, Coinbase, Binance, Phantom, a corporate
-                    treasury, or a hardware wallet. Anything that signs a Base transfer works. The
-                    CLI auto-detects the deposit and continues.
+                    polls. Send USDC on Base from MetaMask, Coinbase, Binance, Phantom, a corporate
+                    treasury, or a hardware wallet. Anything that signs a Base transfer works.
                   </li>
                   <li>
                     <strong>Bridge or swap</strong> — already hold ETH or USDC on another chain?
                     Bridge to Base via Across, the official Base bridge, or any DEX aggregator, then
-                    send to the printed address. CLI handles the rest.
+                    send to the printed address.
                   </li>
                 </ul>
                 <p className="muted">
-                  Your private key never leaves your machine. Back it up. Losing it means losing the
-                  funds.
+                  Power flags: <code>--reuse</code> (re-emit config for an existing wallet),{" "}
+                  <code>--testnet</code> (Base Sepolia + Circle faucet), <code>--json</code>{" "}
+                  (one-shot, scriptable for CI), <code>--no-poll</code>, <code>--no-open</code>,{" "}
+                  <code>--gateway</code>, <code>--max-spend</code>. See{" "}
+                  <code>npx -y @swarmapi/setup --help</code>.
                 </p>
               </div>
             </div>
