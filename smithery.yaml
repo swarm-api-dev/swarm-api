@@ -4,7 +4,8 @@ displayName: SwarmApi
 description: Pay-per-call SEC filings, company news, insider transactions, jobs, web search, GitHub repo health, and package security via x402 (USDC on Base). 9 tools, ~$0.01 average cost, no API key or subscription.
 homepage: https://swarm-api.com
 repository: https://github.com/swarm-api-dev/swarm-api
-icon: https://swarm-api.com/icon.png
+# Served from landing after deploy; raw GitHub URL works for Smithery before CDN picks up.
+icon: https://raw.githubusercontent.com/swarm-api-dev/swarm-api/main/apps/landing/public/icon.svg
 license: MIT
 keywords:
   - sec

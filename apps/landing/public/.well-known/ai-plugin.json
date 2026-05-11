@@ -11,7 +11,7 @@
     "type": "openapi",
     "url": "https://api.swarm-api.com/openapi.json"
   },
-  "logo_url": "https://swarm-api.com/icon.png",
+  "logo_url": "https://swarm-api.com/icon.svg",
   "contact_email": "support@swarm-api.com",
   "legal_info_url": "https://swarm-api.com"
 }
