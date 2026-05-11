@@ -14,7 +14,7 @@ import open from "open";
 // Constants
 // ---------------------------------------------------------------------------
 
-const VERSION = "0.2.1";
+const VERSION = "0.2.2";
 const CDP_PROJECT_ID = "ca67d8b0-2675-4286-b036-e090af3cc689";
 const USDC_BASE_MAINNET = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" as const;
 const USDC_BASE_SEPOLIA = "0x036CbD53842c5426634e7929541eC2318f3dCF7e" as const;
