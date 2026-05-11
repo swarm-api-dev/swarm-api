@@ -1,6 +1,6 @@
 {
   "name": "@swarm-api/setup",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "license": "MIT",
   "description": "One-shot CLI for SwarmApi: generate or import a Base wallet (hex or BIP-39), fund with USDC on Base (send, exchange withdraw, or testnet faucet), and write an MCP config block for Claude Desktop / Cursor / Cline / Zed.",
   "keywords": [

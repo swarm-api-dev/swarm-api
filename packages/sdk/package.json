@@ -1,6 +1,6 @@
 {
   "name": "@swarm-api/sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "description": "SwarmApi agent SDK: fetch-style client that handles HTTP 402 payment challenges with budget controls.",
   "homepage": "https://swarm-api.com",
