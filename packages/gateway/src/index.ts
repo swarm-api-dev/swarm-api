@@ -2,6 +2,7 @@ import "dotenv/config";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 import express, { type Request, type Response } from "express";
+import rateLimit from "express-rate-limit";
 import { paymentMiddleware, x402ResourceServer } from "@x402/express";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { HTTPFacilitatorClient, type RoutesConfig } from "@x402/core/server";
@@ -238,10 +239,22 @@ const resourceServer = new x402ResourceServer(facilitatorClient).register(
 
 const app = express();
 
+// Railway / Vercel / most PaaS sit one reverse-proxy hop in front of us.
+// Without this, req.ip is the proxy's IP and rate-limit-by-IP becomes
+// "rate-limit by single IP" → trivial DoS. trust proxy: 1 means trust
+// exactly the first X-Forwarded-For hop (the platform's edge).
+app.set("trust proxy", 1);
+
+// Strip control chars from anything user-controlled that we put in logs so
+// callers can't smuggle fake log lines via %0a in the URL.
+function safeLog(s: string): string {
+  return s.replace(/[\r\n\u0000-\u001f\u007f]/g, "");
+}
+
 app.use((req, res, next) => {
   const sigHeader = req.headers["x-payment"] ?? req.headers["payment-signature"];
   const sig = Array.isArray(sigHeader) ? sigHeader[0] : sigHeader;
-  console.log(`[gateway] ${req.method} ${req.url} ${sig ? "(signed)" : "(unsigned)"}`);
+  console.log(`[gateway] ${safeLog(req.method)} ${safeLog(req.url)} ${sig ? "(signed)" : "(unsigned)"}`);
 
   if (!sig) return next();
 
@@ -322,8 +335,26 @@ app.use((_req, res, next) => {
 // These power the landing / dashboard / marketplace web apps. They expose
 // aggregate stats and the public endpoint catalog. No payment info beyond
 // what's already on-chain.
+//
+// Rate-limited because they're free + CORS-open: without this, a single
+// browser tab could fire thousands of /v1/payments scans per minute. The
+// paid /v1/companies/* routes don't need this because x402 itself is the
+// rate limiter — each call costs USDC.
+const publicLimiter = rateLimit({
+  windowMs: 60_000,
+  limit: 120, // 120 req/min/IP, generous for the dashboard + scrapers
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: { error: "Too many requests. Limit: 120 req/min." },
+});
+const healthLimiter = rateLimit({
+  windowMs: 60_000,
+  limit: 600, // generous for Railway's healthcheck which polls aggressively
+  standardHeaders: false,
+  legacyHeaders: false,
+});
 
-app.get("/v1/stats", (_req: Request, res: Response) => {
+app.get("/v1/stats", publicLimiter, (_req: Request, res: Response) => {
   const settled = db
     .select({
       count: sql<number>`COUNT(*)`,
@@ -351,13 +382,13 @@ app.get("/v1/stats", (_req: Request, res: Response) => {
   });
 });
 
-app.get("/v1/payments", (req: Request, res: Response) => {
+app.get("/v1/payments", publicLimiter, (req: Request, res: Response) => {
   const limit = Math.max(1, Math.min(Number(req.query.limit ?? 50), 200));
   const rows = db.select().from(payments).orderBy(desc(payments.createdAt)).limit(limit).all();
   res.json({ count: rows.length, payments: rows });
 });
 
-app.get("/v1/catalog", (_req: Request, res: Response) => {
+app.get("/v1/catalog", publicLimiter, (_req: Request, res: Response) => {
   const rows = db.select().from(endpoints).all();
   res.json({ count: rows.length, endpoints: rows });
 });
@@ -549,7 +580,7 @@ app.get("/v1/filings/extract", async (req: Request, res: Response) => {
   }
 });
 
-app.get("/health", (_req: Request, res: Response) => {
+app.get("/health", healthLimiter, (_req: Request, res: Response) => {
   res.json({ ok: true });
 });
 

@@ -38,15 +38,23 @@ Generates a new Base wallet, opens Coinbase Onramp pre-filled for $5 USDC on Bas
 ### 2. Bring your own private key
 
 ```bash
-npx -y @swarmapi/setup --key 0xYOUR_PRIVATE_KEY
+# Recommended — secret never hits argv or shell history:
+echo -n "$YOUR_PRIVATE_KEY" | npx -y @swarmapi/setup --key-stdin
+
+# Or from a file (chmod 600 it first):
+npx -y @swarmapi/setup --key-file ~/.secrets/swarmapi-key.txt
 ```
 
 Imports an existing Base EOA. Skips Onramp (you presumably already funded it). Still polls for the USDC balance unless you pass `--no-poll`.
 
+> `--key <hex>` and `--mnemonic "..."` still work for backwards compatibility but are **discouraged** — argv is visible to every process on the box via `ps aux` and is logged to shell history. The CLI prints a warning when you use them.
+
 ### 3. Bring your own BIP-39 mnemonic
 
 ```bash
-npx -y @swarmapi/setup --mnemonic "word1 word2 word3 ... word12"
+echo -n "word1 word2 ... word12" | npx -y @swarmapi/setup --mnemonic-stdin
+# or
+npx -y @swarmapi/setup --mnemonic-file ~/.secrets/swarmapi-seed.txt
 ```
 
 Derives the address at the standard Ethereum path `m/44'/60'/0'/0/0`. Accepts 12 or 24-word mnemonics.
@@ -83,8 +91,6 @@ Skips every interactive prompt, generates a wallet, prints a single JSON object 
 -h, --help                 Show usage.
 -v, --version              Print version.
     --reuse                Reuse the wallet at ~/.swarmapi/wallet.json.
-    --key <hex>            Import a 0x-prefixed 32-byte private key.
-    --mnemonic "..."       Import a 12 or 24-word BIP-39 mnemonic.
     --testnet              Use Base Sepolia instead of Base mainnet.
     --no-poll              Skip on-chain balance polling.
     --no-open              Don't auto-open the browser.
@@ -93,6 +99,14 @@ Skips every interactive prompt, generates a wallet, prints a single JSON object 
     --gateway <url>        SwarmApi gateway URL (default: https://api.swarm-api.com).
     --max-spend <atomic>   Per-call USDC ceiling, atomic 6-dec USDC (default: 100000 = $0.10).
     --out-dir <path>       Where to write wallet.json and claude-desktop.json.
+
+Secret import — prefer stdin / file:
+    --key-stdin            Read 0x-prefixed 32-byte private key from stdin.
+    --mnemonic-stdin       Read 12 or 24-word BIP-39 mnemonic from stdin.
+    --key-file <path>      Read private key from a file (chmod 600 recommended).
+    --mnemonic-file <path> Read mnemonic from a file (chmod 600 recommended).
+    --key <hex>            DEPRECATED — exposed in 'ps aux' and shell history.
+    --mnemonic "..."       DEPRECATED — exposed in 'ps aux' and shell history.
 ```
 
 Environment fallbacks (used when the matching flag isn't passed):
@@ -127,6 +141,7 @@ Paste the `swarmapi` object from `~/.swarmapi/claude-desktop.json` into the host
 - Cap your spend two ways:
   - `--max-spend` (refuses any 402 challenge above this per-call ceiling, even if signed accidentally).
   - The wallet's USDC balance itself (an empty wallet can't sign for anything).
+- **Importing secrets safely**: argv is visible to every process running as the same user (`ps auxww`) and most shells persist it to history. Use `--key-stdin` / `--mnemonic-stdin` (pipe), `--key-file` / `--mnemonic-file` (chmod 600 file), or just let the CLI prompt you interactively. The deprecated `--key <hex>` / `--mnemonic "..."` forms still work but emit a warning.
 
 ---
 

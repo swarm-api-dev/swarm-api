@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync, mkdirSync, readFileSync, writeFileSync, chmodSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync, chmodSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 import { createInterface } from "node:readline/promises";
@@ -14,7 +14,7 @@ import open from "open";
 // Constants
 // ---------------------------------------------------------------------------
 
-const VERSION = "0.2.0";
+const VERSION = "0.2.1";
 const CDP_PROJECT_ID = "ca67d8b0-2675-4286-b036-e090af3cc689";
 const USDC_BASE_MAINNET = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" as const;
 const USDC_BASE_SEPOLIA = "0x036CbD53842c5426634e7929541eC2318f3dCF7e" as const;
@@ -49,6 +49,12 @@ interface Args {
   reuse: boolean;
   key?: Hex;
   mnemonic?: string;
+  keyStdin: boolean;
+  mnemonicStdin: boolean;
+  keyFile?: string;
+  mnemonicFile?: string;
+  /** True when --key or --mnemonic was passed inline; we'll warn loudly. */
+  inlineSecretFlag: boolean;
   gateway: string;
   maxSpend: string;
   outDir: string;
@@ -64,6 +70,9 @@ function parseArgs(argv: ReadonlyArray<string>): Args {
     noOpen: false,
     testnet: false,
     reuse: false,
+    keyStdin: false,
+    mnemonicStdin: false,
+    inlineSecretFlag: false,
     gateway: process.env.SWARMAPI_GATEWAY_URL ?? DEFAULT_GATEWAY,
     maxSpend: process.env.SWARMAPI_MAX_SPEND_PER_REQUEST_ATOMIC ?? DEFAULT_MAX_SPEND,
     outDir: path.join(homedir(), ".swarmapi"),
@@ -98,19 +107,41 @@ function parseArgs(argv: ReadonlyArray<string>): Args {
         break;
       case a.startsWith("--key="):
         args.key = parseKeyArg(a.slice(6));
+        args.inlineSecretFlag = true;
         break;
       case a === "--key": {
         const next = argv[++i];
         args.key = parseKeyArg(next);
+        args.inlineSecretFlag = true;
         break;
       }
+      case a === "--key-stdin":
+        args.keyStdin = true;
+        break;
+      case a.startsWith("--key-file="):
+        args.keyFile = a.slice(11);
+        break;
+      case a === "--key-file":
+        args.keyFile = argv[++i];
+        break;
       case a.startsWith("--mnemonic="):
         args.mnemonic = a.slice(11).trim();
+        args.inlineSecretFlag = true;
         break;
       case a === "--mnemonic": {
         args.mnemonic = (argv[++i] ?? "").trim();
+        args.inlineSecretFlag = true;
         break;
       }
+      case a === "--mnemonic-stdin":
+        args.mnemonicStdin = true;
+        break;
+      case a.startsWith("--mnemonic-file="):
+        args.mnemonicFile = a.slice(16);
+        break;
+      case a === "--mnemonic-file":
+        args.mnemonicFile = argv[++i];
+        break;
       case a.startsWith("--gateway="):
         args.gateway = a.slice(10);
         break;
@@ -176,7 +207,23 @@ async function main() {
 
   if (!args.json) banner();
 
-  // 1. Resolve wallet source: --key, --mnemonic, --reuse, prompt, or generate
+  // SECURITY: passing secrets as inline argv values is a known footgun.
+  // They're visible to other users via `ps aux` (Unix), Task Manager (Win),
+  // and get logged to shell history. Loudly recommend --key-stdin /
+  // --mnemonic-stdin / --*-file. We still accept the flags because that's
+  // already the documented API.
+  if (args.inlineSecretFlag && !args.json) {
+    process.stderr.write(
+      "\n⚠ --key/--mnemonic on the command line is visible to other users on\n" +
+        "  this machine via `ps aux` and is persisted in shell history.\n" +
+        "  Prefer one of:\n" +
+        "    echo -n \"$KEY\"  | npx -y @swarmapi/setup --key-stdin\n" +
+        "    npx -y @swarmapi/setup --key-file ./key.txt\n" +
+        "    npx -y @swarmapi/setup --mnemonic-file ./seed.txt\n\n",
+    );
+  }
+
+  // 1. Resolve wallet source: --key/--mnemonic (inline | stdin | file), --reuse, prompt, or generate
   const wallet = await resolveWallet(args);
 
   // 2. CRITICAL — persist key to disk BEFORE any network polling so a Ctrl-C
@@ -277,17 +324,43 @@ interface ResolvedWallet {
   privateKey: Hex;
   address: Address;
   imported: boolean;
-  source: "generated" | "flag-key" | "flag-mnemonic" | "prompt-key" | "prompt-mnemonic" | "reused";
+  source:
+    | "generated"
+    | "flag-key"
+    | "flag-mnemonic"
+    | "flag-key-stdin"
+    | "flag-mnemonic-stdin"
+    | "flag-key-file"
+    | "flag-mnemonic-file"
+    | "prompt-key"
+    | "prompt-mnemonic"
+    | "reused";
 }
 
 async function resolveWallet(args: Args): Promise<ResolvedWallet> {
-  // --key wins, then --mnemonic, then --reuse, then interactive prompt
+  // Precedence: explicit flags (any source) > --reuse > existing-wallet prompt > generate
   if (args.key) {
     const account = privateKeyToAccount(args.key);
     return { privateKey: args.key, address: account.address, imported: true, source: "flag-key" };
   }
+  if (args.keyStdin) {
+    const raw = await readAllStdin();
+    return { ...walletFromKey(raw, "flag-key-stdin"), imported: true };
+  }
+  if (args.keyFile) {
+    const raw = readSecretFile(args.keyFile);
+    return { ...walletFromKey(raw, "flag-key-file"), imported: true };
+  }
   if (args.mnemonic) {
     return walletFromMnemonic(args.mnemonic, "flag-mnemonic");
+  }
+  if (args.mnemonicStdin) {
+    const raw = await readAllStdin();
+    return walletFromMnemonic(raw, "flag-mnemonic-stdin");
+  }
+  if (args.mnemonicFile) {
+    const raw = readSecretFile(args.mnemonicFile);
+    return walletFromMnemonic(raw, "flag-mnemonic-file");
   }
   if (args.reuse) {
     const existing = readExistingWallet(args.outDir);
@@ -600,8 +673,6 @@ Flags:
   -h, --help                 Show this message and exit.
   -v, --version              Print version and exit.
       --reuse                Reuse the wallet at ~/.swarmapi/wallet.json (skip generation).
-      --key <hex>            Import an existing 0x-prefixed 32-byte private key.
-      --mnemonic "..."       Import an existing 12 or 24-word BIP-39 mnemonic.
       --testnet              Use Base Sepolia instead of Base mainnet.
       --no-poll              Skip on-chain balance polling.
       --no-open              Don't auto-open the browser for Coinbase Onramp.
@@ -611,11 +682,19 @@ Flags:
       --max-spend <atomic>   Per-call USDC ceiling in 6-decimal atomic units (default: 100000 = $0.10).
       --out-dir <path>       Where to write wallet.json and claude-desktop.json (default: ~/.swarmapi).
 
+Secret import (PREFER stdin / file — inline argv is visible in 'ps aux' + shell history):
+      --key-stdin            Read 0x-prefixed 32-byte private key from stdin.
+      --mnemonic-stdin       Read 12 or 24-word BIP-39 mnemonic from stdin.
+      --key-file <path>      Read private key from a file (chmod 600 recommended).
+      --mnemonic-file <path> Read mnemonic from a file (chmod 600 recommended).
+      --key <hex>            DEPRECATED — exposed in process listing. Use --key-stdin.
+      --mnemonic "..."       DEPRECATED — exposed in process listing. Use --mnemonic-stdin.
+
 Examples:
   npx -y @swarmapi/setup
   npx -y @swarmapi/setup --reuse
-  npx -y @swarmapi/setup --key 0xabc...123
-  npx -y @swarmapi/setup --mnemonic "word1 word2 ..."
+  echo -n "$KEY" | npx -y @swarmapi/setup --key-stdin
+  npx -y @swarmapi/setup --mnemonic-file ./seed.txt
   npx -y @swarmapi/setup --testnet --no-open
   npx -y @swarmapi/setup --json --dry-run
 
@@ -641,6 +720,35 @@ async function prompt(question: string, fallback: string): Promise<string> {
   } finally {
     rl.close();
   }
+}
+
+async function readAllStdin(): Promise<string> {
+  if (stdin.isTTY) {
+    die("stdin is a TTY — pipe the secret instead (e.g. echo -n \"$KEY\" | ... --key-stdin)");
+  }
+  const chunks: Buffer[] = [];
+  for await (const chunk of stdin) {
+    chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
+
+function readSecretFile(filePath: string): string {
+  if (!existsSync(filePath)) die(`secret file not found: ${filePath}`);
+  // Best-effort permission check on POSIX — warn if the file is world-readable.
+  try {
+    const st = statSync(filePath);
+    const mode = st.mode & 0o777;
+    if (process.platform !== "win32" && (mode & 0o077) !== 0) {
+      process.stderr.write(
+        `⚠ ${filePath} has permissive mode ${mode.toString(8).padStart(3, "0")}.\n` +
+          `  Run: chmod 600 ${filePath}\n`,
+      );
+    }
+  } catch {
+    // stat can fail on weird filesystems; non-fatal.
+  }
+  return readFileSync(filePath, "utf8");
 }
 
 function formatUsdc(atomic: bigint): string {

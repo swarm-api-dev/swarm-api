@@ -99,6 +99,14 @@ interface GitHubContributorRaw {
   html_url?: string;
 }
 
+// Defence-in-depth: encodeURIComponent doesn't encode `.` or `-`, so a slug like
+// `../foo` would survive URL-building and let WHATWG URL parsing normalise the
+// path *upward* on api.github.com (e.g. /repos/../etc → /etc). Host is still
+// pinned, but we'd let paying callers probe arbitrary api.github.com paths.
+// GitHub's own validation: owner/repo can contain ASCII letters, digits, `-`,
+// `_`, and `.` (repo only), and is bounded in length. Reject anything else.
+const GITHUB_NAME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/;
+
 export function parseRepoSlug(slug: string): { owner: string; repo: string } {
   const cleaned = slug
     .trim()
@@ -109,7 +117,14 @@ export function parseRepoSlug(slug: string): { owner: string; repo: string } {
   if (parts.length < 2 || !parts[0] || !parts[1]) {
     throw new Error(`Invalid GitHub slug "${slug}". Expected owner/repo.`);
   }
-  return { owner: parts[0], repo: parts[1] };
+  const owner = parts[0];
+  const repo = parts[1];
+  if (!GITHUB_NAME_RE.test(owner) || !GITHUB_NAME_RE.test(repo)) {
+    throw new Error(
+      `Invalid GitHub slug "${slug}". Owner/repo must match ${GITHUB_NAME_RE.source}.`,
+    );
+  }
+  return { owner, repo };
 }
 
 export async function fetchRepoSnapshot(
