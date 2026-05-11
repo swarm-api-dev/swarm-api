@@ -192,13 +192,7 @@ function structuredData() {
 }
 
 export default async function LandingPage() {
-  const stats = await fetchStats().catch(() => ({
-    settledCount: 0,
-    failedCount: 0,
-    revenueAtomic: "0",
-    uniquePayers: 0,
-    endpointCount: 0,
-  }));
+  const stats = await fetchStats();
 
   const endpointLive = stats.endpointCount > 0 ? stats.endpointCount : TOOLS.length;
 

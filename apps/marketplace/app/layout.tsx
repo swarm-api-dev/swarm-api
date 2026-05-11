@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { MarketplaceFooter } from "./components/MarketplaceFooter";
+import { MarketplaceHeader } from "./components/MarketplaceHeader";
 import "./globals.css";
 
 export const metadata = {
@@ -31,7 +33,11 @@ export const viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <MarketplaceHeader />
+        {children}
+        <MarketplaceFooter />
+      </body>
     </html>
   );
 }

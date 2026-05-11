@@ -1,7 +1,14 @@
-/** Shared URLs for landing + subpages. */
+/** Marketing site origin (landing + whitepaper + status live here). */
+export const SITE_URL_MARKETING = "https://swarm-api.com";
 
-export const SITE_URL = "https://swarm-api.com";
-export const GATEWAY_URL = "https://api.swarm-api.com";
+export function landingOrigin(): string {
+  const o = process.env.NEXT_PUBLIC_LANDING_ORIGIN?.trim();
+  if (o) return o.replace(/\/$/, "");
+  if (process.env.VERCEL === "1") return SITE_URL_MARKETING;
+  return "http://localhost:3003";
+}
+
+export const LANDING_ORIGIN = landingOrigin();
 
 /** Marketing hostname only — never use as Marketplace/Dashboard target (misconfigured env). */
 function stripMarketingHost(url: string, prodDefault: string): string {
@@ -16,7 +23,6 @@ function stripMarketingHost(url: string, prodDefault: string): string {
   return url;
 }
 
-/** Use HTTPS satellites on Vercel; localhost only when not deployed there (local dev / CI). */
 function satelliteUrl(envKey: string, nextPublicKey: string, vercelDefault: string, localDefault: string): string {
   const directRaw = process.env[envKey]?.trim();
   if (directRaw) return stripMarketingHost(directRaw, vercelDefault);
@@ -44,12 +50,10 @@ export const MARKETPLACE_URL = satelliteUrl(
   "http://localhost:3002",
 );
 
-/** SwarmApi product whitepaper (this site). */
-export const SWARMAPI_WHITEPAPER_HREF = "/whitepaper";
+export const WHITE_PAPER_URL = `${LANDING_ORIGIN}/whitepaper`;
+export const STATUS_URL = `${LANDING_ORIGIN}/status`;
 
-/** Canonical x402 protocol document (Coinbase / x402.org). */
 export const X402_WHITEPAPER_PDF = "https://www.x402.org/x402-whitepaper.pdf";
-
 export const X402_REPO_URL = "https://github.com/x402-foundation/x402";
 export const NPM_URL = "https://www.npmjs.com/package/@swarm-api/mcp";
 export const NPM_SETUP_URL = "https://www.npmjs.com/package/@swarm-api/setup";

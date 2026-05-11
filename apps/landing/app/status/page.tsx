@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
+import { GATEWAY_BASE_URL } from "../../lib/api";
 
 export const revalidate = 60;
 export const dynamic = "force-dynamic";
 
-const GATEWAY_URL = process.env.GATEWAY_URL ?? "https://api.swarm-api.com";
 const SITE_URL = process.env.SITE_URL ?? "https://swarm-api.com";
 
 export const metadata: Metadata = {
@@ -101,7 +101,7 @@ async function probePaidEndpoint(
 ): Promise<{ status: ProbeStatus; latencyMs: number; httpStatus?: number; note?: string }> {
   const started = Date.now();
   try {
-    const res = await fetch(`${GATEWAY_URL}${resource}`, {
+    const res = await fetch(`${GATEWAY_BASE_URL}${resource}`, {
       method,
       headers: method === "POST" ? { "Content-Type": "application/json" } : undefined,
       body: method === "POST" ? "{}" : undefined,
@@ -154,10 +154,10 @@ function shortAddr(addr: string | null): string {
 
 export default async function StatusPage() {
   const [health, stats, catalog, recent] = await Promise.all([
-    safeFetch<{ ok: boolean }>(`${GATEWAY_URL}/health`),
-    safeFetch<Stats>(`${GATEWAY_URL}/v1/stats`),
-    safeFetch<CatalogResponse>(`${GATEWAY_URL}/v1/catalog`),
-    safeFetch<PaymentsResponse>(`${GATEWAY_URL}/v1/payments?limit=10`),
+    safeFetch<{ ok: boolean }>(`${GATEWAY_BASE_URL}/health`),
+    safeFetch<Stats>(`${GATEWAY_BASE_URL}/v1/stats`),
+    safeFetch<CatalogResponse>(`${GATEWAY_BASE_URL}/v1/catalog`),
+    safeFetch<PaymentsResponse>(`${GATEWAY_BASE_URL}/v1/payments?limit=10`),
   ]);
 
   // Probe every paid endpoint in parallel. This is server-rendered every 60s,
@@ -218,7 +218,7 @@ export default async function StatusPage() {
           title="Gateway"
           status={health.status}
           latencyMs={health.latencyMs}
-          subtitle={GATEWAY_URL.replace(/^https?:\/\//, "")}
+          subtitle={GATEWAY_BASE_URL.replace(/^https?:\/\//, "")}
           detail={health.error}
         />
         <StatusCard
@@ -340,7 +340,7 @@ export default async function StatusPage() {
 
       <footer style={{ marginTop: 56, paddingTop: 24, borderTop: "1px solid var(--border)" }}>
         <p className="muted" style={{ fontSize: 13, margin: 0 }}>
-          Gateway: <a href={GATEWAY_URL}>{GATEWAY_URL}</a> · Settles on Base mainnet · USDC{" "}
+          Gateway: <a href={GATEWAY_BASE_URL}>{GATEWAY_BASE_URL}</a> · Settles on Base mainnet · USDC{" "}
           <a href="https://basescan.org/token/0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913">
             0x8335…2913
           </a>{" "}

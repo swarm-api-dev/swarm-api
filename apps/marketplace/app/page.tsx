@@ -31,7 +31,7 @@ const data = await res.json();`;
 }
 
 export default async function MarketplacePage() {
-  const list = await fetchEndpoints().catch(() => [] as Endpoint[]);
+  const list = await fetchEndpoints();
 
   return (
     <main>
