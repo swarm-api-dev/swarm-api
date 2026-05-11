@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "installCommand": "sh -c 'cd \"$(git rev-parse --show-toplevel)\" && npm ci'",
-  "buildCommand": "sh -c 'sh \"$(git rev-parse --show-toplevel)/scripts/vercel-monorepo-next-build.sh\" @swarmapi/landing'"
+  "installCommand": "sh -c 'if [ -f package-lock.json ]; then npm ci; else npm ci --prefix ../..; fi'",
+  "buildCommand": "npm run build"
 }

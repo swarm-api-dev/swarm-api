@@ -1,10 +1,29 @@
 # Vercel (monorepo)
 
-Use **one Vercel project per app**. For each project:
+Each Next.js app is a **separate Vercel project** (`swarm-api.com`, `marketplace.*`, `dashboard.*`).
 
-1. **Git repo**: this repository.
-2. **Root Directory**: either **`.`** (repository root) **or** `apps/landing`, `apps/marketplace`, or `apps/dashboard`.  
-   The `vercel.json` inside each app folder is only picked up when **Root Directory** points at that app (e.g. `apps/landing`). If Root Directory is `.`, add **Build / Install overrides** in the Vercel dashboard to match that app’s `vercel.json`, or set Root Directory to the matching `apps/*` path (recommended).
-3. **Output Directory**: leave **empty** (Next.js default — do not set `.next` manually).
+## Required settings (each project)
 
-Install and build commands in each `apps/*/vercel.json` always resolve the monorepo root with `git rev-parse` so `.next` is produced under the correct Next app.
+1. **Root Directory** — set to exactly one of:
+   - `apps/landing`
+   - `apps/marketplace`
+   - `apps/dashboard`  
+
+   If Root Directory is left as **`.`** (repo root), Vercel will **not** read `apps/*/vercel.json` and will run the root `package.json` `build` script instead — that builds the gateway/SDK, **not** Next.js, and you get **“.next was not found”**.
+
+2. **Output Directory** — leave **empty**. Do not set `.next` manually for Next.js.
+
+3. **Framework preset** — Next.js (auto-detected).
+
+The `vercel.json` in each app installs from the monorepo root when needed (`npm ci --prefix ../..`) and runs `npm run build` in that app so `.next` is created next to `next.config.mjs`.
+
+## CLI deploy
+
+From the app folder (after `vercel link`):
+
+```bash
+cd apps/landing   # or marketplace / dashboard
+npx vercel deploy --prod --yes
+```
+
+Or link once per project at the repo root *only if* the cloud project’s Root Directory already matches that app (see above).
