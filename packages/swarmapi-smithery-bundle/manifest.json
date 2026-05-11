@@ -1,0 +1,53 @@
+{
+  "manifest_version": "0.3",
+  "name": "swarmapi",
+  "display_name": "SwarmApi",
+  "version": "0.1.5",
+  "description": "Pay-per-call SEC filings, company news, insider trades, jobs, web search, GitHub health, and package CVEs via x402 (USDC on Base). Nine tools — no API subscription.",
+  "author": {
+    "name": "SwarmApi",
+    "url": "https://swarm-api.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/swarm-api-dev/swarm-api.git"
+  },
+  "homepage": "https://swarm-api.com",
+  "license": "MIT",
+  "server": {
+    "type": "node",
+    "entry_point": "server/stub.js",
+    "mcp_config": {
+      "command": "npx",
+      "args": ["-y", "@swarm-api/mcp"],
+      "env": {
+        "SWARMAPI_PRIVATE_KEY": "${user_config.swarmapi_private_key}",
+        "SWARMAPI_GATEWAY_URL": "${user_config.swarmapi_gateway_url}",
+        "SWARMAPI_MAX_SPEND_PER_REQUEST_ATOMIC": "${user_config.swarmapi_max_spend_atomic}"
+      }
+    }
+  },
+  "user_config": {
+    "swarmapi_private_key": {
+      "type": "string",
+      "title": "Base wallet private key",
+      "description": "0x-prefixed 32-byte EOA with USDC on Base mainnet. Used only to sign EIP-3009 payments — never shared with SwarmApi servers.",
+      "sensitive": true,
+      "required": true
+    },
+    "swarmapi_gateway_url": {
+      "type": "string",
+      "title": "Gateway URL",
+      "description": "Override only if you self-host the gateway.",
+      "default": "https://api.swarm-api.com",
+      "required": false
+    },
+    "swarmapi_max_spend_atomic": {
+      "type": "string",
+      "title": "Per-call spend cap (atomic USDC)",
+      "description": "Six-decimal atomic units. Default 100000 = $0.10.",
+      "default": "100000",
+      "required": false
+    }
+  }
+}
