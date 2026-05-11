@@ -23,7 +23,7 @@ const MARKETPLACE_URL = process.env.MARKETPLACE_URL ?? "http://localhost:3002";
 const WHITEPAPER_URL = "https://www.x402.org/x402-whitepaper.pdf";
 const X402_REPO_URL = "https://github.com/x402-foundation/x402";
 const NPM_URL = "https://www.npmjs.com/package/@swarm-api/mcp";
-const GITHUB_REPO_URL = "https://github.com/tuduminjo/swarm-api";
+const GITHUB_REPO_URL = "https://github.com/swarm-api-dev/swarm-api";
 const GATEWAY_URL = "https://api.swarm-api.com";
 
 const TOOLS: ReadonlyArray<{ name: string; description: string; priceUsd: string }> = [

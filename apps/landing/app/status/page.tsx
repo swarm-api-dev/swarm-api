@@ -344,7 +344,7 @@ export default async function StatusPage() {
           <a href="https://basescan.org/token/0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913">
             0x8335…2913
           </a>{" "}
-          · <a href="https://github.com/tuduminjo/swarm-api">Source</a>
+          · <a href="https://github.com/swarm-api-dev/swarm-api">Source</a>
         </p>
       </footer>
     </main>

@@ -29,11 +29,11 @@
   "homepage": "https://swarm-api.com",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tuduminjo/swarm-api.git",
+    "url": "git+https://github.com/swarm-api-dev/swarm-api.git",
     "directory": "packages/mcp"
   },
   "bugs": {
-    "url": "https://github.com/tuduminjo/swarm-api/issues"
+    "url": "https://github.com/swarm-api-dev/swarm-api/issues"
   },
   "publishConfig": {
     "access": "public"

@@ -123,9 +123,9 @@ This walks you through key generation, funding via Coinbase Onramp, and dropping
 
 ## Source code
 
-- MCP server: <https://github.com/tuduminjo/swarm-api/tree/main/packages/mcp>
-- Payment SDK: <https://github.com/tuduminjo/swarm-api/tree/main/packages/sdk>
-- Gateway: <https://github.com/tuduminjo/swarm-api/tree/main/packages/gateway>
+- MCP server: <https://github.com/swarm-api-dev/swarm-api/tree/main/packages/mcp>
+- Payment SDK: <https://github.com/swarm-api-dev/swarm-api/tree/main/packages/sdk>
+- Gateway: <https://github.com/swarm-api-dev/swarm-api/tree/main/packages/gateway>
 
 ## License
 

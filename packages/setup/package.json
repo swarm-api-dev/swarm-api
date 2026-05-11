@@ -16,11 +16,11 @@
   "homepage": "https://swarm-api.com",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tuduminjo/swarm-api.git",
+    "url": "https://github.com/swarm-api-dev/swarm-api.git",
     "directory": "packages/setup"
   },
   "bugs": {
-    "url": "https://github.com/tuduminjo/swarm-api/issues"
+    "url": "https://github.com/swarm-api-dev/swarm-api/issues"
   },
   "type": "module",
   "main": "dist/index.js",

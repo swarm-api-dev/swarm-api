@@ -72,7 +72,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         <link rel="alternate" type="text/plain" title="LLM-friendly summary" href="/llms.txt" />
         <link rel="alternate" type="application/json" title="AI plugin manifest" href="/.well-known/ai-plugin.json" />
-        <link rel="me" href="https://github.com/tuduminjo/swarm-api" />
+        <link rel="me" href="https://github.com/swarm-api-dev/swarm-api" />
       </head>
       <body>{children}</body>
     </html>
