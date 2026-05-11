@@ -14,9 +14,11 @@ npx @anthropic-ai/mcpb pack . swarmapi.mcpb
 
 ## Publish on Smithery
 
+Qualified name is **`namespace/server-id`**. Your namespace is **`swarm-api`** — pick a short server slug (example below uses **`swarmapi`**).
+
 ```bash
 npx smithery@latest auth login
-npx smithery@latest mcp publish ./swarmapi.mcpb -n YOUR_NAMESPACE/swarm-api
+npx smithery@latest mcp publish ./swarmapi.mcpb -n swarm-api/swarmapi
 ```
 
-Use the namespace you already use on Smithery. Server ID slug rules: 3–39 chars, letters, numbers, hyphens, underscores.
+Server ID rules: 3–39 characters, start with a letter, only letters, numbers, hyphens, underscores. Use another slug after the slash if `swarmapi` is already taken.
