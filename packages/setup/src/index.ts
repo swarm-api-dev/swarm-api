@@ -161,7 +161,7 @@ function parseArgs(argv: ReadonlyArray<string>): Args {
         args.outDir = argv[++i] ?? args.outDir;
         break;
       default:
-        die(`unknown flag: ${a}\n\nRun \`@swarmapi/setup --help\` for usage.`);
+        die(`unknown flag: ${a}\n\nRun \`@swarm-api/setup --help\` for usage.`);
     }
   }
 
@@ -201,7 +201,7 @@ async function main() {
     return;
   }
   if (args.version) {
-    process.stdout.write(`@swarmapi/setup v${VERSION}\n`);
+    process.stdout.write(`@swarm-api/setup v${VERSION}\n`);
     return;
   }
 
@@ -217,9 +217,9 @@ async function main() {
       "\n⚠ --key/--mnemonic on the command line is visible to other users on\n" +
         "  this machine via `ps aux` and is persisted in shell history.\n" +
         "  Prefer one of:\n" +
-        "    echo -n \"$KEY\"  | npx -y @swarmapi/setup --key-stdin\n" +
-        "    npx -y @swarmapi/setup --key-file ./key.txt\n" +
-        "    npx -y @swarmapi/setup --mnemonic-file ./seed.txt\n\n",
+        "    echo -n \"$KEY\"  | npx -y @swarm-api/setup --key-stdin\n" +
+        "    npx -y @swarm-api/setup --key-file ./key.txt\n" +
+        "    npx -y @swarm-api/setup --mnemonic-file ./seed.txt\n\n",
     );
   }
 
@@ -589,7 +589,7 @@ function buildMcpConfig(privateKey: Hex, args: Args) {
     mcpServers: {
       swarmapi: {
         command: "npx",
-        args: ["-y", "@swarmapi/mcp"],
+        args: ["-y", "@swarm-api/mcp"],
         env: {
           SWARMAPI_PRIVATE_KEY: privateKey,
           SWARMAPI_GATEWAY_URL: args.gateway,
@@ -652,7 +652,7 @@ function printNextSteps(privateKey: Hex, address: Address, paths: Paths, args: A
   process.stdout.write(`  address:      ${address}\n`);
   process.stdout.write(`  private key:  ${privateKey}\n`);
   process.stdout.write(`  network:      ${args.testnet ? "Base Sepolia (testnet)" : "Base mainnet"}\n`);
-  process.stdout.write(`\nRe-run any time with: npx -y @swarmapi/setup --reuse\n`);
+  process.stdout.write(`\nRe-run any time with: npx -y @swarm-api/setup --reuse\n`);
 }
 
 // ---------------------------------------------------------------------------
@@ -661,13 +661,13 @@ function printNextSteps(privateKey: Hex, address: Address, paths: Paths, args: A
 
 function printHelp(): void {
   process.stdout.write(
-    `@swarmapi/setup v${VERSION}
+    `@swarm-api/setup v${VERSION}
 
 Interactive CLI that generates or imports a Base wallet, funds it via Coinbase
 Onramp, and writes an MCP config block for Claude Desktop / Cursor / Cline / Zed.
 
 Usage:
-  npx -y @swarmapi/setup [flags]
+  npx -y @swarm-api/setup [flags]
 
 Flags:
   -h, --help                 Show this message and exit.
@@ -691,12 +691,12 @@ Secret import (PREFER stdin / file — inline argv is visible in 'ps aux' + shel
       --mnemonic "..."       DEPRECATED — exposed in process listing. Use --mnemonic-stdin.
 
 Examples:
-  npx -y @swarmapi/setup
-  npx -y @swarmapi/setup --reuse
-  echo -n "$KEY" | npx -y @swarmapi/setup --key-stdin
-  npx -y @swarmapi/setup --mnemonic-file ./seed.txt
-  npx -y @swarmapi/setup --testnet --no-open
-  npx -y @swarmapi/setup --json --dry-run
+  npx -y @swarm-api/setup
+  npx -y @swarm-api/setup --reuse
+  echo -n "$KEY" | npx -y @swarm-api/setup --key-stdin
+  npx -y @swarm-api/setup --mnemonic-file ./seed.txt
+  npx -y @swarm-api/setup --testnet --no-open
+  npx -y @swarm-api/setup --json --dry-run
 
 Environment fallbacks (used when matching flag is not set):
   SWARMAPI_GATEWAY_URL                  same as --gateway

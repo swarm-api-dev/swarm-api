@@ -1,11 +1,11 @@
-# @swarmapi/setup
+# @swarm-api/setup
 
 One-shot CLI for [SwarmApi](https://swarm-api.com). Generates **or imports** a Base wallet, optionally funds it via [Coinbase Onramp](https://www.coinbase.com/onramp), polls for the USDC deposit, and writes a ready-to-paste MCP config block for Claude Desktop, Cursor, Cline, Zed, or any other MCP client.
 
 The whole flow runs without any signups, API keys, or accounts. Just `npx` it.
 
 ```bash
-npx -y @swarmapi/setup
+npx -y @swarm-api/setup
 ```
 
 That's it. The CLI walks you through the rest.
@@ -30,7 +30,7 @@ The key is persisted **immediately after generation, before any network calls** 
 ### 1. Generate fresh + Onramp (default)
 
 ```bash
-npx -y @swarmapi/setup
+npx -y @swarm-api/setup
 ```
 
 Generates a new Base wallet, opens Coinbase Onramp pre-filled for $5 USDC on Base, polls the wallet until the deposit lands, prints the MCP config block, and reminds you to back up the private key.
@@ -39,10 +39,10 @@ Generates a new Base wallet, opens Coinbase Onramp pre-filled for $5 USDC on Bas
 
 ```bash
 # Recommended — secret never hits argv or shell history:
-echo -n "$YOUR_PRIVATE_KEY" | npx -y @swarmapi/setup --key-stdin
+echo -n "$YOUR_PRIVATE_KEY" | npx -y @swarm-api/setup --key-stdin
 
 # Or from a file (chmod 600 it first):
-npx -y @swarmapi/setup --key-file ~/.secrets/swarmapi-key.txt
+npx -y @swarm-api/setup --key-file ~/.secrets/swarmapi-key.txt
 ```
 
 Imports an existing Base EOA. Skips Onramp (you presumably already funded it). Still polls for the USDC balance unless you pass `--no-poll`.
@@ -52,9 +52,9 @@ Imports an existing Base EOA. Skips Onramp (you presumably already funded it). S
 ### 3. Bring your own BIP-39 mnemonic
 
 ```bash
-echo -n "word1 word2 ... word12" | npx -y @swarmapi/setup --mnemonic-stdin
+echo -n "word1 word2 ... word12" | npx -y @swarm-api/setup --mnemonic-stdin
 # or
-npx -y @swarmapi/setup --mnemonic-file ~/.secrets/swarmapi-seed.txt
+npx -y @swarm-api/setup --mnemonic-file ~/.secrets/swarmapi-seed.txt
 ```
 
 Derives the address at the standard Ethereum path `m/44'/60'/0'/0/0`. Accepts 12 or 24-word mnemonics.
@@ -62,7 +62,7 @@ Derives the address at the standard Ethereum path `m/44'/60'/0'/0/0`. Accepts 12
 ### 4. Reuse a previously-generated wallet
 
 ```bash
-npx -y @swarmapi/setup --reuse
+npx -y @swarm-api/setup --reuse
 ```
 
 Loads `~/.swarmapi/wallet.json` and re-emits the MCP config block. Useful after changing gateway URL or spend ceiling.
@@ -70,7 +70,7 @@ Loads `~/.swarmapi/wallet.json` and re-emits the MCP config block. Useful after 
 ### 5. Testnet (Base Sepolia)
 
 ```bash
-npx -y @swarmapi/setup --testnet
+npx -y @swarm-api/setup --testnet
 ```
 
 Targets Base Sepolia + the [Circle USDC faucet](https://faucet.circle.com/). Good for development.
@@ -78,7 +78,7 @@ Targets Base Sepolia + the [Circle USDC faucet](https://faucet.circle.com/). Goo
 ### 6. Scripted / non-interactive
 
 ```bash
-npx -y @swarmapi/setup --json --no-poll
+npx -y @swarm-api/setup --json --no-poll
 ```
 
 Skips every interactive prompt, generates a wallet, prints a single JSON object to stdout, and exits. Perfect for CI or one-shot agent provisioning.

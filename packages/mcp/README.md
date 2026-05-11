@@ -1,6 +1,6 @@
-# @swarmapi/mcp
+# @swarm-api/mcp
 
-[![npm version](https://img.shields.io/npm/v/@swarmapi/mcp.svg)](https://www.npmjs.com/package/@swarmapi/mcp)
+[![npm version](https://img.shields.io/npm/v/@swarm-api/mcp.svg)](https://www.npmjs.com/package/@swarm-api/mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **MCP server for SwarmApi — 9 pay-per-call tools for AI agents.** SEC filings, company news, insider transactions, jobs, web search, GitHub repo health, and npm/PyPI/cargo package security. Every call is settled per request in USDC on Base mainnet via the [x402](https://www.x402.org/) protocol — no API keys, no monthly subscription, no rate limits keyed to your account.
@@ -42,7 +42,7 @@ Add this block to `claude_desktop_config.json` (Settings → Developer → Edit 
   "mcpServers": {
     "swarmapi": {
       "command": "npx",
-      "args": ["-y", "@swarmapi/mcp"],
+      "args": ["-y", "@swarm-api/mcp"],
       "env": {
         "SWARMAPI_PRIVATE_KEY": "0xYOUR_BASE_PRIVATE_KEY_WITH_USDC"
       }
@@ -62,7 +62,7 @@ In `~/.cursor/mcp.json`:
   "mcpServers": {
     "swarmapi": {
       "command": "npx",
-      "args": ["-y", "@swarmapi/mcp"],
+      "args": ["-y", "@swarm-api/mcp"],
       "env": {
         "SWARMAPI_PRIVATE_KEY": "0xYOUR_BASE_PRIVATE_KEY_WITH_USDC"
       }
@@ -74,7 +74,7 @@ In `~/.cursor/mcp.json`:
 ### Test the server directly
 
 ```bash
-SWARMAPI_PRIVATE_KEY=0x... npx @swarmapi/mcp
+SWARMAPI_PRIVATE_KEY=0x... npx @swarm-api/mcp
 ```
 
 It speaks the standard MCP `stdio` transport, so any client that can spawn an stdio MCP server will work.
@@ -114,7 +114,7 @@ USDC contract on Base: `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`.
 You can generate a fresh Base EOA with our setup tool:
 
 ```bash
-npx @swarmapi/setup
+npx @swarm-api/setup
 ```
 
 This walks you through key generation, funding via Coinbase Onramp, and dropping the Claude Desktop config block.

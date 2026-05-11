@@ -22,7 +22,7 @@ const DASHBOARD_URL = process.env.DASHBOARD_URL ?? "http://localhost:3001";
 const MARKETPLACE_URL = process.env.MARKETPLACE_URL ?? "http://localhost:3002";
 const WHITEPAPER_URL = "https://www.x402.org/x402-whitepaper.pdf";
 const X402_REPO_URL = "https://github.com/x402-foundation/x402";
-const NPM_URL = "https://www.npmjs.com/package/@swarmapi/mcp";
+const NPM_URL = "https://www.npmjs.com/package/@swarm-api/mcp";
 const GITHUB_REPO_URL = "https://github.com/tuduminjo/swarm-api";
 const GATEWAY_URL = "https://api.swarm-api.com";
 
@@ -62,7 +62,7 @@ function structuredData() {
       {
         "@type": "SoftwareApplication",
         "@id": `${SITE_URL}#mcp`,
-        name: "@swarmapi/mcp",
+        name: "@swarm-api/mcp",
         applicationCategory: "DeveloperApplication",
         operatingSystem: "macOS, Windows, Linux",
         description:
@@ -133,7 +133,7 @@ function structuredData() {
           },
           {
             "@type": "Question",
-            name: "Which MCP hosts work with @swarmapi/mcp?",
+            name: "Which MCP hosts work with @swarm-api/mcp?",
             acceptedAnswer: {
               "@type": "Answer",
               text:
@@ -431,7 +431,7 @@ export default async function LandingPage() {
               <div className="step-num">1</div>
               <div className="step-body">
                 <p className="step-title">Run the setup CLI:</p>
-                <pre className="code config-block">{`$ npx -y @swarmapi/setup
+                <pre className="code config-block">{`$ npx -y @swarm-api/setup
 
 Wallet source:
   [1] Generate a fresh Base wallet   (recommended)
@@ -486,7 +486,7 @@ Polling Base mainnet for USDC balance (Ctrl-C is safe — wallet saved):
                   <code>--testnet</code> (Base Sepolia + Circle faucet), <code>--json</code>{" "}
                   (one-shot, scriptable for CI), <code>--no-poll</code>, <code>--no-open</code>,{" "}
                   <code>--gateway</code>, <code>--max-spend</code>. See{" "}
-                  <code>npx -y @swarmapi/setup --help</code>.
+                  <code>npx -y @swarm-api/setup --help</code>.
                 </p>
               </div>
             </div>
@@ -538,7 +538,7 @@ const filings = (await res.json()).filings;`}</pre>
                 See the API catalog →
               </a>
               <a href={NPM_URL} target="_blank" rel="noreferrer" className="btn">
-                @swarmapi/mcp on npm
+                @swarm-api/mcp on npm
               </a>
               <a href={X402_REPO_URL} target="_blank" rel="noreferrer" className="btn">
                 x402 spec

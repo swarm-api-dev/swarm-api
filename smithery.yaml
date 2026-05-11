@@ -28,7 +28,7 @@ startCommand:
       SWARMAPI_PRIVATE_KEY:
         type: string
         title: Base mainnet private key
-        description: 0x-prefixed 32-byte EOA private key with USDC balance on Base mainnet. The wallet is used to sign per-call payments via EIP-3009. Generate one with `npx @swarmapi/setup` if you don't have one.
+        description: 0x-prefixed 32-byte EOA private key with USDC balance on Base mainnet. The wallet is used to sign per-call payments via EIP-3009. Generate one with `npx @swarm-api/setup` if you don't have one.
         pattern: "^0x[a-fA-F0-9]{64}$"
         format: password
       SWARMAPI_GATEWAY_URL:
@@ -45,7 +45,7 @@ startCommand:
     |-
     (config) => ({
       command: "npx",
-      args: ["-y", "@swarmapi/mcp"],
+      args: ["-y", "@swarm-api/mcp"],
       env: {
         SWARMAPI_PRIVATE_KEY: config.SWARMAPI_PRIVATE_KEY,
         SWARMAPI_GATEWAY_URL: config.SWARMAPI_GATEWAY_URL || "https://api.swarm-api.com",
