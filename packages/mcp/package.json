@@ -1,6 +1,6 @@
 {
   "name": "@swarm-api/mcp",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "license": "MIT",
   "description": "MCP server for SwarmApi: 9 pay-per-call tools for SEC filings, company news, insider transactions, jobs, web search, GitHub repos, and npm/PyPI/cargo package security. Payments settled per request in USDC on Base via x402.",
   "type": "module",

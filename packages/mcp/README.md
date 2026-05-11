@@ -13,12 +13,34 @@ Run **`npx @swarm-api/mcp --help`** (or `swarmapi-mcp --help`) for CLI usage —
 
 Browse installs and the hosted MCP URL from **[SwarmApi on Smithery](https://smithery.ai/servers/swarm-api/swarmapi)** (Integrate tab). For full control and reproducible versions, use **`npx -y @swarm-api/mcp`** as below.
 
+### Cursor — try without USDC
+
+Two tools never charge USDC: **`gateway_ping`** (calls `GET /health`) and **`gateway_catalog`** (calls `GET /v1/catalog`). Omit **`SWARMAPI_PRIVATE_KEY`** so Cursor starts MCP with **free tools only** — ideal for wiring MCP settings before funding a wallet.
+
+**Windows:** `%USERPROFILE%\.cursor\mcp.json` · **macOS/Linux:** `~/.cursor/mcp.json`
+
+```json
+{
+  "mcpServers": {
+    "swarmapi-free": {
+      "command": "npx",
+      "args": ["-y", "@swarm-api/mcp"],
+      "env": {}
+    }
+  }
+}
+```
+
+After confirming tools appear under MCP in Cursor, add a **`SWARMAPI_PRIVATE_KEY`** env entry (same shape as Claude Desktop) to unlock all nine paid tools.
+
 ---
 
 ## What you get
 
 | Tool | What it does | Cost (USDC) |
 | --- | --- | ---: |
+| `gateway_ping` | Public gateway health (`GET /health`). | **$0** |
+| `gateway_catalog` | Public endpoint catalog (`GET /v1/catalog`). | **$0** |
 | `resolve_company` | Resolve a ticker / CIK / free-form name to canonical SEC records. | $0.002 |
 | `list_filings` | List recent 10-K, 10-Q, 8-K, S-1, Form 4 (etc.) filings for a CIK. | $0.005 |
 | `extract_filing` | Parse a 10-K/10-Q/8-K into structured per-Item JSON (Item 1A, 7, 5.02, …). | $0.05 |

@@ -29,14 +29,17 @@ if (CLI_ARGS.some((a) => a === "--version" || a === "-v")) {
 }
 
 function makeHelpText(): string {
-  return `SwarmApi MCP server — paid gateway tools over stdio (Model Context Protocol).
+  return `SwarmApi MCP server — gateway tools over stdio (Model Context Protocol).
 
 Usage:
-  swarmapi-mcp              Start the server (needs SWARMAPI_PRIVATE_KEY).
+  swarmapi-mcp              Start the server (free tools always; paid tools need a funded key).
   swarmapi-mcp --help, -h   Show this message (no env required).
   swarmapi-mcp --version    Print version (no env required).
 
-Environment (required to run the server):
+Without SWARMAPI_PRIVATE_KEY:
+  Registers gateway_ping and gateway_catalog only (hit public /health and /v1/catalog — no USDC).
+
+Environment (for paid tools — SEC, news, search, etc.):
   SWARMAPI_PRIVATE_KEY     Base mainnet 0x… private key with USDC (signs EIP-3009 per call).
   AGENT_PRIVATE_KEY        Alias for SWARMAPI_PRIVATE_KEY.
 
@@ -52,21 +55,29 @@ npm: https://www.npmjs.com/package/@swarm-api/mcp
 `;
 }
 
-const PRIVATE_KEY = process.env.SWARMAPI_PRIVATE_KEY ?? process.env.AGENT_PRIVATE_KEY;
+function isValidWalletPrivateKey(raw: string | undefined): raw is `0x${string}` {
+  return typeof raw === "string" && /^0x[a-fA-F0-9]{64}$/.test(raw);
+}
+
+const PRIVATE_KEY_RAW = process.env.SWARMAPI_PRIVATE_KEY ?? process.env.AGENT_PRIVATE_KEY;
 const GATEWAY_URL = process.env.SWARMAPI_GATEWAY_URL ?? "https://api.swarm-api.com";
 const MAX_SPEND = parseBigIntEnv(process.env.SWARMAPI_MAX_SPEND_PER_REQUEST_ATOMIC, 100_000n);
 
-if (!PRIVATE_KEY || !PRIVATE_KEY.startsWith("0x")) {
+if (PRIVATE_KEY_RAW !== undefined && PRIVATE_KEY_RAW.length > 0 && !isValidWalletPrivateKey(PRIVATE_KEY_RAW)) {
   process.stderr.write(
-    "[swarmapi-mcp] Missing SWARMAPI_PRIVATE_KEY. Set it to a Base 0x-prefixed private key with USDC balance.\n",
+    "[swarmapi-mcp] SWARMAPI_PRIVATE_KEY is set but invalid — expected 0x plus 64 hex chars.\n",
   );
   process.exit(1);
 }
 
-const fetchPaid = createAgentClient({
-  privateKey: PRIVATE_KEY as `0x${string}`,
-  maxSpendPerRequest: MAX_SPEND,
-});
+const HAS_PAID_KEY = isValidWalletPrivateKey(PRIVATE_KEY_RAW);
+
+const fetchPaid = HAS_PAID_KEY
+  ? createAgentClient({
+      privateKey: PRIVATE_KEY_RAW,
+      maxSpendPerRequest: MAX_SPEND,
+    })
+  : null;
 
 const server = new McpServer({
   name: "swarmapi",
@@ -74,6 +85,27 @@ const server = new McpServer({
 });
 
 server.registerTool(
+  "gateway_ping",
+  {
+    description:
+      "FREE — no USDC. Returns public gateway health JSON from GET /health. Use from Cursor to confirm SwarmApi MCP can reach the gateway without a funded wallet.",
+    inputSchema: {},
+  },
+  async () => callPublicJson("GET", "/health"),
+);
+
+server.registerTool(
+  "gateway_catalog",
+  {
+    description:
+      "FREE — no USDC. Returns the public tool catalog from GET /v1/catalog (names, paths, prices in atomic USDC). Same data as the marketplace listing.",
+    inputSchema: {},
+  },
+  async () => callPublicJson("GET", "/v1/catalog"),
+);
+
+if (HAS_PAID_KEY) {
+  server.registerTool(
   "resolve_company",
   {
     description:
@@ -258,11 +290,36 @@ server.registerTool(
   },
 );
 
+}
+
 interface CallOptions {
   body?: unknown;
 }
 
+async function callPublicJson(method: "GET", path: string) {
+  const url = `${GATEWAY_URL}${path}`;
+  try {
+    const res = await fetch(url, {
+      method,
+      signal: AbortSignal.timeout(20_000),
+    });
+    const text = await res.text();
+    if (res.status >= 400) {
+      return errorResult(`Gateway returned ${res.status}: ${text.slice(0, 500)}`);
+    }
+    return { content: [{ type: "text" as const, text }] };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return errorResult(`Request failed: ${msg}`);
+  }
+}
+
 async function callJson(method: "GET" | "POST", path: string, opts: CallOptions = {}) {
+  if (!fetchPaid) {
+    return errorResult(
+      "Paid tools need SWARMAPI_PRIVATE_KEY with USDC on Base. Try gateway_ping or gateway_catalog (free).",
+    );
+  }
   const url = `${GATEWAY_URL}${path}`;
   try {
     const res = await fetchPaid(url, {
@@ -304,6 +361,10 @@ function parseBigIntEnv(raw: string | undefined, fallback: bigint): bigint {
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
-process.stderr.write(
-  `[swarmapi-mcp] connected. gateway=${GATEWAY_URL} maxSpend=${MAX_SPEND} atomic\n`,
-);
+if (HAS_PAID_KEY) {
+  process.stderr.write(
+    `[swarmapi-mcp] connected. gateway=${GATEWAY_URL} maxSpend=${MAX_SPEND} atomic (free + paid tools)\n`,
+  );
+} else {
+  process.stderr.write(`[swarmapi-mcp] connected. gateway=${GATEWAY_URL} (free tools only)\n`);
+}

@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "swarmapi",
   "display_name": "SwarmApi",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Pay-per-call SEC filings, company news, insider trades, jobs, web search, GitHub health, and package CVEs via x402 (USDC on Base). Nine tools — no API subscription.",
   "author": {
     "name": "SwarmApi",
