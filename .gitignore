@@ -36,3 +36,5 @@ Thumbs.db
 *.swp
 
 .claude/settings.local.json
+
+.vercel
