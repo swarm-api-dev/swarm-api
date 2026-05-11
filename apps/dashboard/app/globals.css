@@ -184,7 +184,7 @@ footer.site .links a:focus-visible {
 main.dash {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 28px 24px 72px;
+  padding: 48px 24px 72px;
 }
 
 .page-head {
@@ -207,7 +207,7 @@ main.dash {
 
 .page-head h1 {
   margin: 0 0 8px;
-  font-size: clamp(24px, 4vw, 30px);
+  font-size: clamp(28px, 4.5vw, 34px);
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.15;
@@ -215,10 +215,10 @@ main.dash {
 
 .subtitle {
   margin: 0;
-  max-width: 540px;
+  max-width: 640px;
   color: var(--muted);
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: 17px;
+  line-height: 1.5;
 }
 
 .page-head-actions {
@@ -291,7 +291,7 @@ main.dash {
 }
 
 .panel-meta {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
 }
 
@@ -367,16 +367,17 @@ main.dash {
 }
 
 .metric-value {
-  font-size: 24px;
+  font-size: clamp(22px, 3vw, 28px);
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.1;
 }
 
 .metric-hint {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
   margin-top: auto;
+  line-height: 1.45;
 }
 
 .rate-row {
@@ -426,7 +427,7 @@ main.dash {
 table.data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
   min-width: 760px;
 }
 
@@ -497,7 +498,7 @@ table.data-table {
   color: var(--muted);
   padding: 28px 16px;
   text-align: center;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.55;
   border: 1px dashed var(--border);
   border-radius: 10px;
@@ -546,7 +547,15 @@ table.data-table {
   }
 
   main.dash {
-    padding: 22px 16px 56px;
+    padding: 32px 16px 56px;
+  }
+
+  .page-head h1 {
+    font-size: clamp(24px, 7vw, 30px);
+  }
+
+  .subtitle {
+    font-size: 16px;
   }
 
   .panel {
