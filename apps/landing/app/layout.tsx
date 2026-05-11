@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const SITE = "https://swarm-api.com";
@@ -74,7 +75,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link rel="alternate" type="application/json" title="AI plugin manifest" href="/.well-known/ai-plugin.json" />
         <link rel="me" href="https://github.com/swarm-api-dev/swarm-api" />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
