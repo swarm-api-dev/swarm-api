@@ -1,4 +1,19 @@
 import { fetchStats } from "../lib/api";
+import { SiteFooter } from "./components/SiteFooter";
+import { SiteHeader } from "./components/SiteHeader";
+import {
+  SITE_URL,
+  GATEWAY_URL,
+  DASHBOARD_URL,
+  MARKETPLACE_URL,
+  X402_WHITEPAPER_PDF,
+  X402_REPO_URL,
+  NPM_URL,
+  NPM_SETUP_URL,
+  NPM_SDK_URL,
+  SMITHERY_SERVER_URL,
+  GITHUB_REPO_URL,
+} from "../lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -17,17 +32,6 @@ function formatUsdc(atomic: string | null | undefined): string {
   }
 }
 
-const SITE_URL = "https://swarm-api.com";
-const DASHBOARD_URL = process.env.DASHBOARD_URL ?? "http://localhost:3001";
-const MARKETPLACE_URL = process.env.MARKETPLACE_URL ?? "http://localhost:3002";
-const WHITEPAPER_URL = "https://www.x402.org/x402-whitepaper.pdf";
-const X402_REPO_URL = "https://github.com/x402-foundation/x402";
-const NPM_URL = "https://www.npmjs.com/package/@swarm-api/mcp";
-const NPM_SETUP_URL = "https://www.npmjs.com/package/@swarm-api/setup";
-const NPM_SDK_URL = "https://www.npmjs.com/package/@swarm-api/sdk";
-const SMITHERY_SERVER_URL = "https://smithery.ai/servers/swarm-api/swarmapi";
-const GITHUB_REPO_URL = "https://github.com/swarm-api-dev/swarm-api";
-
 const TOOLS: ReadonlyArray<{ name: string; description: string; priceUsd: string }> = [
   { name: "resolve_company", description: "Resolve ticker, CIK, or company name to a canonical SEC record.", priceUsd: "0.002" },
   { name: "list_filings", description: "List recent SEC filings filtered by form type and date.", priceUsd: "0.005" },
@@ -40,6 +44,18 @@ const TOOLS: ReadonlyArray<{ name: string; description: string; priceUsd: string
   { name: "package_info", description: "npm/PyPI/cargo metadata plus OSV.dev CVE scan.", priceUsd: "0.005" },
 ];
 
+const TOOLS_BY_PRICE = [...TOOLS].sort((a, b) => Number(a.priceUsd) - Number(b.priceUsd));
+const PRICE_SPAN = `$${TOOLS_BY_PRICE[0].priceUsd}–$${TOOLS_BY_PRICE[TOOLS_BY_PRICE.length - 1].priceUsd}`;
+
+/** Representative live 402 from GET /v1/github/repo (truncated Payment-Required payload). */
+const CURL_SAMPLE = `curl -i "${GATEWAY_URL}/v1/github/repo?slug=facebook/react"
+
+HTTP/1.1 402 Payment Required
+Content-Type: application/json; charset=utf-8
+Payment-Required: eyJ4NDAyVmVyc2lvbiI6MiwiZXJyb3IiOiJQYXltZW50IHJlcXVpcmVkIi…
+
+{}`;
+
 function structuredData() {
   return {
     "@context": "https://schema.org",
@@ -51,7 +67,7 @@ function structuredData() {
         url: SITE_URL,
         sameAs: [NPM_URL, NPM_SETUP_URL, GITHUB_REPO_URL, SMITHERY_SERVER_URL, X402_REPO_URL],
         description:
-          "Pay-per-call commerce platform for AI agents. Production endpoints settled in USDC on Base over the x402 protocol.",
+          "Structured JSON APIs for agents — SEC, news, jobs, search, GitHub, CVEs — via MCP or HTTP SDK. Per-call USDC on Base (x402). No vendor API keys.",
       },
       {
         "@type": "WebSite",
@@ -68,7 +84,7 @@ function structuredData() {
         applicationCategory: "DeveloperApplication",
         operatingSystem: "macOS, Windows, Linux",
         description:
-          "Model Context Protocol server exposing SwarmApi's nine paid endpoints as tools for Claude Desktop, Cursor, Continue, and other MCP hosts.",
+          "Model Context Protocol server for Claude Desktop, Cursor, Continue, and other MCP hosts. Nine paid gateway tools plus free gateway_ping and gateway_catalog (health + catalog, no USDC).",
         url: NPM_URL,
         downloadUrl: NPM_URL,
         softwareVersion: "0.1.8",
@@ -99,7 +115,34 @@ function structuredData() {
         mainEntity: [
           {
             "@type": "Question",
-            name: "How does an AI agent pay for an SwarmApi API call?",
+            name: "What is SwarmApi?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text:
+                "SwarmApi is a live HTTP gateway of structured JSON APIs (SEC filings, news, jobs, web search, GitHub repo signals, package CVEs) built for tool-calling AI agents. You connect through the @swarm-api/mcp server or call the same routes with @swarm-api/sdk. Each successful response is paid in USDC on Base using the x402 protocol — HTTP 402 plus an EIP-3009 authorization — instead of vendor API keys.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Do I need the MCP server or the SDK?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text:
+                "Use @swarm-api/mcp inside Cursor, Claude Desktop, Continue, or any MCP host so the model invokes tools directly. Use @swarm-api/sdk for backends, scripts, and services that speak HTTP. Both hit the same gateway at api.swarm-api.com.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Is there a free way to try the MCP server?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text:
+                "Yes. Omit SWARMAPI_PRIVATE_KEY and the MCP server exposes only gateway_ping (GET /health) and gateway_catalog (GET /v1/catalog) — no USDC required. Use that to verify wiring before funding a wallet for paid tools.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "How does an AI agent pay for a SwarmApi API call?",
             acceptedAnswer: {
               "@type": "Answer",
               text:
@@ -157,66 +200,78 @@ export default async function LandingPage() {
     endpointCount: 0,
   }));
 
+  const endpointLive = stats.endpointCount > 0 ? stats.endpointCount : TOOLS.length;
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData()) }}
       />
-      <header className="site">
-        <div className="container">
-          <a href="/" className="brand">
-            <span className="brand-mark">A</span>
-            SwarmApi
-          </a>
-          <nav className="site-nav">
-            <a href={MARKETPLACE_URL}>Marketplace</a>
-            <a href={DASHBOARD_URL}>Dashboard</a>
-            <a href="/status">Status</a>
-            <a href={GITHUB_REPO_URL} target="_blank" rel="noreferrer">
-              GitHub
-            </a>
-            <a href={SMITHERY_SERVER_URL} target="_blank" rel="noreferrer">
-              Smithery
-            </a>
-            <a href={NPM_URL} target="_blank" rel="noreferrer">
-              npm
-            </a>
-            <a href={WHITEPAPER_URL} target="_blank" rel="noreferrer">
-              Whitepaper
-            </a>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader />
 
       <section className="hero">
         <div className="container">
-          <span className="eyebrow">Live · x402 · USDC on Base mainnet</span>
-          <h1 className="hero-title">
-            The first API marketplace your AI agent can{" "}
-            <span className="accent">buy from on its own.</span>
-          </h1>
-          <p className="hero-subtitle">
-            Nine production endpoints — SEC filings, real-time company news, insider trades,
-            hiring signals, web search, GitHub health, package CVEs — settled per call in USDC on
-            Base. No API keys, no contracts, no rate-limit emails. Drop the MCP server into
-            Claude Desktop, fund a wallet, ship.
-          </p>
-          <div className="cta-row">
-            <a href="#install" className="btn btn-primary">
-              Install in 60 seconds →
-            </a>
-            <a href={MARKETPLACE_URL} className="btn">
-              Browse the catalog
-            </a>
-            <a href={DASHBOARD_URL} className="btn">
-              Live payments
-            </a>
+          <div className="hero-layout">
+            <div className="hero-copy">
+              <span className="eyebrow">Live · USDC on Base · x402</span>
+              <h1 className="hero-title">
+                Structured APIs for agents.
+                <br />
+                <span className="accent">Priced per call.</span>
+              </h1>
+              <p className="hero-subtitle">
+                SEC filings, news, hiring, web search, GitHub health, and package CVEs — returned as
+                JSON your model can use. Connect with MCP or call the same routes over HTTP with the
+                TypeScript SDK.
+              </p>
+              <ul className="surface-list">
+                <li>
+                  <strong>MCP:</strong> <code>@swarm-api/mcp</code> for Cursor, Claude Desktop, Continue.
+                </li>
+                <li>
+                  <strong>HTTP + SDK:</strong> <code>@swarm-api/sdk</code> for backends and scripts.
+                </li>
+                <li>
+                  <strong>Payment:</strong> per successful response in USDC via x402 (no vendor API keys).
+                </li>
+              </ul>
+              <p className="hero-metrics">
+                {endpointLive} production tools · {PRICE_SPAN} per call · wallet is the only credential
+              </p>
+              <div className="cta-row">
+                <a href="#install" className="btn btn-primary">
+                  Install →
+                </a>
+                <a href={MARKETPLACE_URL} className="btn">
+                  Catalog &amp; schemas
+                </a>
+                <a href={NPM_SETUP_URL} target="_blank" rel="noreferrer" className="btn">
+                  npm setup
+                </a>
+              </div>
+              <p className="hero-foot">
+                Gateway:{" "}
+                <a href={GATEWAY_URL} target="_blank" rel="noreferrer">
+                  api.swarm-api.com
+                </a>
+                . Protocol:{" "}
+                <a href={X402_REPO_URL} target="_blank" rel="noreferrer">
+                  x402
+                </a>
+                .
+              </p>
+            </div>
+            <div className="curl-card" aria-label="Example unauthenticated gateway response">
+              <div className="curl-card-label">Proof · raw HTTP (try it)</div>
+              <pre className="curl-sample">{CURL_SAMPLE}</pre>
+              <p className="curl-card-foot muted">
+                Unauthenticated clients get <strong className="curl-hl">402</strong> with a{" "}
+                <code>Payment-Required</code> payload (amount in atomic USDC, Base payee). Decode the
+                header or pay through the SDK/MCP.
+              </p>
+            </div>
           </div>
-          <p className="hero-foot">
-            Built on the <a href={X402_REPO_URL} target="_blank" rel="noreferrer">x402 protocol</a>{" "}
-            Coinbase shipped in 2025. Get in before the agents do.
-          </p>
         </div>
       </section>
 
@@ -241,7 +296,50 @@ export default async function LandingPage() {
             </div>
             <div className="stat">
               <div className="stat-label">Endpoints live</div>
-              <div className="stat-value">{stats.endpointCount}</div>
+              <div className="stat-value">{stats.endpointCount || TOOLS.length}</div>
+            </div>
+          </div>
+          <p className="stats-caption">
+            Public aggregate metrics — no customer PII. Zeros only mean limited traffic on this slice,
+            not that payments are disabled.
+          </p>
+        </div>
+      </section>
+
+      <section className="block">
+        <div className="container">
+          <div className="chapter-heading">
+            <span className="chapter-num">[01]</span>
+            <div className="section-eyebrow" style={{ marginBottom: 0 }}>
+              What you get
+            </div>
+          </div>
+          <h2 className="section-title">Two surfaces. One gateway.</h2>
+          <p className="section-lede">
+            Pick MCP for chat-native agents, or the SDK for anything that already speaks HTTP.
+          </p>
+          <div className="surface-grid">
+            <div className="surface-tile">
+              <h3>Agent tools (MCP)</h3>
+              <p>
+                Install <code>@swarm-api/mcp</code>. The host exposes nine paid tools that map 1:1 to
+                gateway routes. Optional free probes: <code>gateway_ping</code>,{" "}
+                <code>gateway_catalog</code> (no wallet).
+              </p>
+            </div>
+            <div className="surface-tile">
+              <h3>HTTP API + TypeScript SDK</h3>
+              <p>
+                Call <code>{GATEWAY_URL}</code> directly or wrap it with{" "}
+                <code>@swarm-api/sdk</code> — automatic 402 handling, signing, and retries.
+              </p>
+            </div>
+            <div className="surface-tile">
+              <h3>Pay when data returns</h3>
+              <p>
+                x402 turns payment into part of the HTTP round-trip.{" "}
+                <a href="#how-payment-works">How payment works →</a>
+              </p>
             </div>
           </div>
         </div>
@@ -249,43 +347,55 @@ export default async function LandingPage() {
 
       <section className="block">
         <div className="container">
-          <div className="section-eyebrow">Why this matters now</div>
-          <h2 className="section-title">
-            The data layer for agentic commerce. Most teams haven't noticed it shipped yet.
-          </h2>
+          <div className="chapter-heading">
+            <span className="chapter-num">[02]</span>
+            <div className="section-eyebrow" style={{ marginBottom: 0 }}>
+              Why teams use SwarmApi
+            </div>
+          </div>
+          <h2 className="section-title">Built for agents shipping real work.</h2>
           <p className="section-lede">
-            In 2025 Coinbase released x402 — a single HTTP status code that lets a server charge a
-            client for one request, settled on-chain in seconds. Every AI agent vendor is rebuilding
-            their tool stack on top of it. SwarmApi is what live agent traffic looks like on day
-            one: production endpoints, real USDC settlement, zero subscriptions.
+            Cheaper than enterprise data contracts when you meter by the task — not by the seat year.
           </p>
-          <div className="why-grid">
+          <div className="benefits-grid">
             <div className="why-card">
               <div className="icon">$</div>
-              <h3>1,000× cheaper than a contract</h3>
+              <h3>Per-call vs. shelfware subscriptions</h3>
               <p>
-                A full company due-diligence pass — resolve, list filings, parse 10-K, news,
-                insiders, jobs, GitHub — runs about <strong>$0.13</strong> in USDC. Crunchbase
-                Enterprise starts at <strong>$20,000/year</strong> for less coverage. Run the math
-                on a thousand companies.
+                A full company pass — every tool once — is about <strong>$0.13</strong> USDC.
+                Enterprise comps often start at five figures a year for slower-moving bundles.
               </p>
             </div>
             <div className="why-card">
               <div className="icon">⏱</div>
-              <h3>Past your model's training cutoff</h3>
+              <h3>Fresher than the training cutoff</h3>
               <p>
-                EDGAR filings indexed within minutes of publication. GDELT news refreshed every 15
-                minutes. Job boards crawled hourly. Your agent never has to ask "is this still
-                current" — the answer is always yes.
+                EDGAR indexing, GDELT-sized news windows, public job boards — structured so the model
+                stops guessing whether a fact is stale.
+              </p>
+            </div>
+            <div className="why-card">
+              <div className="icon">🔑</div>
+              <h3>No API keys</h3>
+              <p>
+                Fund a Base wallet with USDC. That wallet signs each micropayment — no signup wall,
+                no rotating secrets in env vars for vendors.
               </p>
             </div>
             <div className="why-card">
               <div className="icon">{`{ }`}</div>
-              <h3>Built for tool-calling, not humans</h3>
+              <h3>JSON for tool-calling</h3>
               <p>
-                10-K sections as JSON keys. Form 4 trades decoded from XML. News with extracted
-                entities. Job postings with parsed seniority and stack. Designed for an LLM to
-                consume in a single round-trip — not for a person with a browser tab.
+                Filings, insiders, articles, jobs, repo stats, CVE summaries — shapes meant for LLM
+                consumption, not spreadsheet export.
+              </p>
+            </div>
+            <div className="why-card">
+              <div className="icon">⌘</div>
+              <h3>Cursor- and Claude-ready</h3>
+              <p>
+                Same MCP config pattern as other production servers; ship prompts that chain resolve →
+                filings → extract without custom middleware.
               </p>
             </div>
           </div>
@@ -294,59 +404,59 @@ export default async function LandingPage() {
 
       <section className="block">
         <div className="container">
-          <div className="section-eyebrow">How it works</div>
-          <h2 className="section-title">Three steps, one HTTP retry. That's the protocol.</h2>
-          <p className="section-lede">
-            x402 is small enough to read in five minutes and works with any client that can sign
-            an EIP-3009 USDC authorization. The MCP server handles every byte of it.
-          </p>
-          <div className="flow">
-            <div className="flow-step">
-              <div className="num">1</div>
-              <h3>Agent calls a tool</h3>
-              <p>Plain HTTP GET or POST to one of the nine endpoints.</p>
-              <code>GET /v1/companies/filings?id=0000320193</code>
-            </div>
-            <div className="flow-step">
-              <div className="num">2</div>
-              <h3>Gateway returns 402</h3>
-              <p>
-                Payment terms come back in the response: amount, asset, recipient address, chain.
-                Six decimals of USDC, settled on Base mainnet.
-              </p>
-              <code>402 Payment Required</code>
-            </div>
-            <div className="flow-step">
-              <div className="num">3</div>
-              <h3>SDK signs and retries</h3>
-              <p>
-                @swarm-api/sdk signs the USDC authorization off-chain, retries with one header, gets
-                the structured JSON back. The facilitator settles on-chain in the background.
-              </p>
-              <code>200 OK · structured JSON</code>
+          <div className="chapter-heading">
+            <span className="chapter-num">[03]</span>
+            <div className="section-eyebrow" style={{ marginBottom: 0 }}>
+              Catalog
             </div>
           </div>
-        </div>
-      </section>
-
-      <section className="block">
-        <div className="container">
-          <div className="section-eyebrow">What you can ask</div>
-          <h2 className="section-title">Nine tools. One wallet. Real signals.</h2>
+          <h2 className="section-title">Nine paid tools. Grouped by job-to-be-done.</h2>
           <p className="section-lede">
-            Each tool is an MCP function for Claude Desktop / Cursor / Continue, and a plain HTTP
-            endpoint for everything else. Sources: SEC EDGAR, GDELT 2.0, Greenhouse, Lever,
-            GitHub, npm, PyPI, cargo, OSV.dev, Brave Search — packaged into the JSON your agent
-            actually needs.
+            Full JSON schemas and examples live in the Marketplace. MCP tool names match the rows below.
           </p>
+
+          <p className="prompt-examples">
+            <strong>Example prompts:</strong> “Summarize material risks from AAPL&apos;s latest 10-K
+            Item 1A.” · “What insider Form 4 activity hit NVDA this quarter?” · “Is{" "}
+            <code>facebook/react</code> actively maintained and any critical CVEs on its npm deps?”
+          </p>
+
+          <p className="muted" style={{ margin: "0 0 16px", fontSize: 14 }}>
+            MCP-only free helpers (omit <code>SWARMAPI_PRIVATE_KEY</code>):{" "}
+            <code>gateway_ping</code> → <code>GET /health</code>, <code>gateway_catalog</code> →{" "}
+            <code>GET /v1/catalog</code>.
+          </p>
+
+          <div className="catalog-table-wrap">
+            <table className="catalog-table">
+              <thead>
+                <tr>
+                  <th>Tool</th>
+                  <th>Price</th>
+                  <th>What it returns</th>
+                </tr>
+              </thead>
+              <tbody>
+                {TOOLS_BY_PRICE.map((t) => (
+                  <tr key={t.name}>
+                    <td>
+                      <code>{t.name}</code>
+                    </td>
+                    <td className="cat-price">${t.priceUsd}</td>
+                    <td>{t.description}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
           <div className="audiences">
             <article className="audience">
               <span className="tag tag-providers">SEC + insiders</span>
-              <h3>Ticker to risk factors to CEO trades.</h3>
+              <h3>Ticker → filings → narrative.</h3>
               <p>
-                EDGAR is free and the source of truth, but XBRL-shaped and slow to parse. We resolve
-                tickers, list filings, extract 10-K/10-Q/8-K Items as JSON, and decode every Form 4
-                insider trade for officers, directors, and 10% holders.
+                Resolve symbols to CIK, walk recent filings, lift 10-K / 10-Q / 8-K Items into JSON,
+                decode Form 4 insider flows.
               </p>
               <ul className="tool-list">
                 <li>
@@ -372,18 +482,17 @@ export default async function LandingPage() {
               </ul>
             </article>
             <article className="audience">
-              <span className="tag tag-agents">Real-time signals</span>
-              <h3>What the model couldn't memorise.</h3>
+              <span className="tag tag-agents">Signals</span>
+              <h3>News, hiring, open web.</h3>
               <p>
-                GDELT 2.0 indexes most of the world's news every 15 minutes. Public ATS boards on
-                Greenhouse and Lever expose hiring activity. Brave Search covers the long tail.
-                Every signal is fresher than your model's cutoff.
+                GDELT-backed news, Greenhouse/Lever job boards where exposed, Brave-backed web search
+                for the long tail query.
               </p>
               <ul className="tool-list">
                 <li>
                   <code className="tool-name">company_news</code>
                   <span className="tool-price">$0.02</span>
-                  <span className="tool-desc">GDELT 2.0 articles, default 30-day window.</span>
+                  <span className="tool-desc">Articles, default 30-day window.</span>
                 </li>
                 <li>
                   <code className="tool-name">company_jobs</code>
@@ -399,29 +508,147 @@ export default async function LandingPage() {
             </article>
             <article className="audience">
               <span className="tag tag-code">Code intelligence</span>
-              <h3>What your coding agent needs to ship safely.</h3>
+              <h3>Repo health &amp; supply chain.</h3>
               <p>
-                Every Cursor and Claude Code prompt is bottlenecked on the same question: is this
-                dependency maintained, current, and free of CVEs? GitHub plus npm, PyPI, cargo, and
-                OSV.dev — bundled into single calls so the agent stops guessing.
+                Snapshot GitHub activity and inventory npm/PyPI/cargo packages with OSV.dev CVE
+                context — one round-trip each.
               </p>
               <ul className="tool-list">
                 <li>
                   <code className="tool-name">github_repo</code>
                   <span className="tool-price">$0.005</span>
-                  <span className="tool-desc">Stars, languages, license, last 10 commits, releases.</span>
+                  <span className="tool-desc">Stars, languages, license, commits, releases.</span>
                 </li>
                 <li>
                   <code className="tool-name">package_info</code>
                   <span className="tool-price">$0.005</span>
-                  <span className="tool-desc">npm/PyPI/cargo metadata + OSV.dev CVE scan.</span>
+                  <span className="tool-desc">Registry metadata + OSV.dev CVE scan.</span>
                 </li>
               </ul>
               <p className="callout">
-                Full due-diligence pass — every tool once — runs about <strong>$0.13</strong> per
-                company. Compare your current data bill.
+                Full due-diligence pass — every paid tool once — about <strong>$0.13</strong> USDC.
               </p>
             </article>
+          </div>
+        </div>
+      </section>
+
+      <section className="block" id="how-payment-works">
+        <div className="container">
+          <div className="chapter-heading">
+            <span className="chapter-num">[04]</span>
+            <div className="section-eyebrow" style={{ marginBottom: 0 }}>
+              Protocol
+            </div>
+          </div>
+          <h2 className="section-title">Four beats: request, challenge, sign, settle.</h2>
+          <p className="section-lede">
+            x402 keeps settlement on Base while your integration stays plain HTTP + one signed header
+            on retry.
+          </p>
+          <div className="flow">
+            <div className="flow-step">
+              <div className="num">1</div>
+              <h3>Request</h3>
+              <p>Agent calls the gateway — same verbs and paths as the MCP tool names imply.</p>
+              <code>GET /v1/github/repo?slug=owner/repo</code>
+            </div>
+            <div className="flow-step">
+              <div className="num">2</div>
+              <h3>Challenge</h3>
+              <p>
+                Gateway answers <strong>402 Payment Required</strong> with machine-readable terms (
+                <code>Payment-Required</code> header / payload).
+              </p>
+              <code>402 + accepts[] · amount · asset · payTo</code>
+            </div>
+            <div className="flow-step">
+              <div className="num">3</div>
+              <h3>Sign</h3>
+              <p>
+                SDK or MCP runner signs an EIP-3009 USDC authorization for that quote and attaches it
+                on retry.
+              </p>
+              <code>X-Payment: …</code>
+            </div>
+            <div className="flow-step">
+              <div className="num">4</div>
+              <h3>Settle + respond</h3>
+              <p>
+                Gateway verifies, returns structured JSON, and the facilitator completes USDC
+                settlement on Base.
+              </p>
+              <code>200 OK · application/json</code>
+            </div>
+          </div>
+
+          <details className="landing-details">
+            <summary>Technical details (EIP-3009 &amp; facilitator)</summary>
+            <div className="details-body">
+              <p>
+                Authorizations follow ERC-3009 <code>transferWithAuthorization</code>, letting the
+                payer approve an atomic transfer referenced by the payment payload — no on-chain tx
+                from your hot path before the retry. Coinbase CDP facilitates settlement on Base;
+                USDC contract <code>0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913</code>. Read the{" "}
+                <a href={X402_WHITEPAPER_PDF} target="_blank" rel="noreferrer">
+                  x402 whitepaper (PDF)
+                </a>{" "}
+                for the full handshake.
+              </p>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <section className="block">
+        <div className="container">
+          <div className="chapter-heading">
+            <span className="chapter-num">[05]</span>
+            <div className="section-eyebrow" style={{ marginBottom: 0 }}>
+              Integrations
+            </div>
+          </div>
+          <h2 className="section-title">Where SwarmApi plugs in.</h2>
+          <p className="section-lede">
+            MCP registries, packages, live ops — same gateway everywhere.
+          </p>
+          <div className="integrations-strip">
+            <h3>Hosts &amp; distribution</h3>
+            <div className="integrations-row">
+              <span style={{ fontSize: 13, color: "var(--muted)" }}>MCP:</span>
+              <a href={NPM_URL} target="_blank" rel="noreferrer">
+                Cursor
+              </a>
+              <a href={NPM_URL} target="_blank" rel="noreferrer">
+                Claude Desktop
+              </a>
+              <a href={NPM_URL} target="_blank" rel="noreferrer">
+                Continue
+              </a>
+              <a href={SMITHERY_SERVER_URL} target="_blank" rel="noreferrer">
+                Smithery
+              </a>
+              <span style={{ fontSize: 13, color: "var(--muted)" }}>Packages:</span>
+              <a href={NPM_URL} target="_blank" rel="noreferrer">
+                @swarm-api/mcp
+              </a>
+              <a href={NPM_SDK_URL} target="_blank" rel="noreferrer">
+                @swarm-api/sdk
+              </a>
+              <a href={NPM_SETUP_URL} target="_blank" rel="noreferrer">
+                @swarm-api/setup
+              </a>
+              <span style={{ fontSize: 13, color: "var(--muted)" }}>Product:</span>
+              <a href={MARKETPLACE_URL}>Marketplace</a>
+              <a href={DASHBOARD_URL}>Dashboard</a>
+              <a href="/status">Status</a>
+              <a href={GITHUB_REPO_URL} target="_blank" rel="noreferrer">
+                Source
+              </a>
+              <a href={X402_REPO_URL} target="_blank" rel="noreferrer">
+                x402
+              </a>
+            </div>
           </div>
         </div>
       </section>
@@ -429,41 +656,81 @@ export default async function LandingPage() {
       <section className="block" id="install">
         <div className="container">
           <div className="quickstart">
-            <h2>Live in 60 seconds.</h2>
+            <h2>Install</h2>
             <p>
-              Generate a Base wallet, fund it with USDC on Base (send, exchange withdraw, or testnet
-              faucet), write the Claude Desktop config — one CLI, no SwarmApi API key signup. Then
-              restart Claude and ask anything.
+              Fast path: run the setup CLI, paste one JSON block into your MCP host, restart. Use the
+              SDK when you are not inside an MCP runtime.
             </p>
 
             <div className="dist-grid" aria-label="Install and distribution links">
               <a className="dist-card" href={SMITHERY_SERVER_URL} target="_blank" rel="noreferrer">
                 <span className="dist-label">Registry</span>
                 <strong className="dist-title">Smithery</strong>
-                <span className="dist-desc">Hosted MCP install for supported clients (Integrate tab).</span>
+                <span className="dist-desc">Hosted MCP install for supported clients.</span>
               </a>
               <a className="dist-card" href={NPM_URL} target="_blank" rel="noreferrer">
                 <span className="dist-label">Package</span>
                 <strong className="dist-title">@swarm-api/mcp</strong>
-                <span className="dist-desc">stdio MCP server — Cursor, Claude Desktop, Continue, …</span>
+                <span className="dist-desc">stdio MCP — Cursor, Claude Desktop, Continue.</span>
               </a>
               <a className="dist-card" href={NPM_SETUP_URL} target="_blank" rel="noreferrer">
                 <span className="dist-label">CLI</span>
                 <strong className="dist-title">@swarm-api/setup</strong>
-                <span className="dist-desc">Wallet, funding prompts, ready-to-paste MCP config.</span>
+                <span className="dist-desc">Wallet, funding prompts, paste-ready MCP config.</span>
               </a>
               <a className="dist-card" href={GITHUB_REPO_URL} target="_blank" rel="noreferrer">
                 <span className="dist-label">Source</span>
                 <strong className="dist-title">GitHub</strong>
-                <span className="dist-desc">Monorepo, issues, and self-hosting the gateway.</span>
+                <span className="dist-desc">Monorepo and gateway reference.</span>
               </a>
             </div>
 
             <div className="install-step">
               <div className="step-num">1</div>
               <div className="step-body">
-                <p className="step-title">Run the setup CLI:</p>
-                <pre className="code config-block">{`$ npx -y @swarm-api/setup
+                <p className="step-title">
+                  <strong>Cursor / Claude / Continue:</strong> run setup
+                </p>
+                <pre className="code config-block">{`$ npx -y @swarm-api/setup`}</pre>
+                <p className="muted">
+                  Generates or imports a Base wallet, waits for USDC on Base if you choose, writes{" "}
+                  <code>~/.swarmapi/claude-desktop.json</code>. Merge the{" "}
+                  <code>mcpServers.swarmapi</code> object into{" "}
+                  <code>~/.cursor/mcp.json</code> or Claude&apos;s config — see the{" "}
+                  <a href={NPM_URL} target="_blank" rel="noreferrer">
+                    MCP readme
+                  </a>
+                  .
+                </p>
+              </div>
+            </div>
+
+            <div className="install-step">
+              <div className="step-num">2</div>
+              <div className="step-body">
+                <p className="step-title">
+                  <strong>Backend / script:</strong> SDK snippet
+                </p>
+                <pre className="code">{`import { createAgentClient } from "@swarm-api/sdk";
+
+const fetch = createAgentClient({
+  privateKey: process.env.AGENT_PRIVATE_KEY,
+  maxSpendPerRequest: 100_000n, // $0.10 cap (atomic USDC)
+});
+
+const res = await fetch(
+  "${GATEWAY_URL}/v1/companies/filings?id=0000320193"
+);
+const body = await res.json();`}</pre>
+              </div>
+            </div>
+
+            <details className="landing-details">
+              <summary>Full CLI transcript &amp; funding detail</summary>
+              <div className="details-body">
+                <div className="step-body" style={{ paddingTop: 4 }}>
+                  <p className="step-title">Interactive setup output (abbreviated paths):</p>
+                    <pre className="code config-block">{`$ npx -y @swarm-api/setup
 
 Wallet source:
   [1] Generate a fresh Base wallet   (recommended)
@@ -486,109 +753,91 @@ Send any amount of USDC on Base mainnet to:
 Polling Base mainnet for USDC balance (Ctrl-C is safe — wallet saved):
 ✓ Detected 10.000000 USDC.
 ✓ MCP config written to ~/.swarmapi/claude-desktop.json`}</pre>
-                <p className="muted">
-                  <strong>Bring your own wallet, or generate a fresh one.</strong> The CLI accepts a
-                  raw private key (<code>--key 0x...</code>), a 12 or 24-word BIP-39 mnemonic
-                  (<code>--mnemonic "..."</code>), or generates one for you. The key is written to{" "}
-                  <code>~/.swarmapi/wallet.json</code> (chmod 600) <em>before</em> any network
-                  call — Ctrl-C during polling is always safe.
-                </p>
-                <p className="muted">
-                  <strong>Three ways to fund — pick any one:</strong>
-                </p>
-                <ul className="fund-list">
-                  <li>
-                    <strong>Send on Base</strong> — the CLI prints your address and polls. Send USDC
-                    on Base from MetaMask, Coinbase (Withdraw → Base), Binance, Phantom, a corporate
-                    treasury, or a hardware wallet.
-                  </li>
-                  <li>
-                    <strong>Buy then withdraw</strong> — purchase USDC on Coinbase or another
-                    exchange and withdraw/send on Base to the printed address. Hosted card checkout
-                    in Coinbase&apos;s widget requires a CDP{" "}
-                    <code>sessionToken</code> from your backend (
-                    <a
-                      href="https://docs.cdp.coinbase.com/onramp/coinbase-hosted-onramp/generating-onramp-url"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      docs
-                    </a>
-                    ); this CLI does not embed that flow.
-                  </li>
-                  <li>
-                    <strong>Bridge or swap</strong> — already hold ETH or USDC on another chain?
-                    Bridge to Base via Across, the official Base bridge, or any DEX aggregator, then
-                    send to the printed address.
-                  </li>
-                </ul>
-                <p className="muted">
-                  Power flags: <code>--reuse</code> (re-emit config for an existing wallet),{" "}
-                  <code>--testnet</code> (Base Sepolia + Circle faucet), <code>--json</code>{" "}
-                  (one-shot, scriptable for CI), <code>--no-poll</code>, <code>--no-open</code>,{" "}
-                  <code>--gateway</code>, <code>--max-spend</code>. See{" "}
-                  <code>npx -y @swarm-api/setup --help</code>.
-                </p>
+                    <p className="muted">
+                      <strong>Bring your own wallet, or generate a fresh one.</strong> The CLI accepts
+                      a raw private key (<code>--key 0x...</code>), a 12 or 24-word BIP-39 mnemonic (
+                      <code>--mnemonic &quot;...&quot;</code>), or generates one for you. Keys are
+                      written to <code>~/.swarmapi/wallet.json</code> (chmod 600) before network calls —
+                      Ctrl-C during polling is safe.
+                    </p>
+                    <p className="muted">
+                      <strong>Three ways to fund — pick any one:</strong>
+                    </p>
+                    <ul className="fund-list">
+                      <li>
+                        <strong>Send on Base</strong> — the CLI prints your address and polls. Send USDC
+                        on Base from MetaMask, Coinbase (Withdraw → Base), Binance, Phantom, treasury,
+                        or hardware wallet.
+                      </li>
+                      <li>
+                        <strong>Buy then withdraw</strong> — purchase USDC on an exchange and
+                        withdraw/send on Base to the printed address. Hosted card checkout needs a CDP{" "}
+                        <code>sessionToken</code> from your backend (
+                        <a
+                          href="https://docs.cdp.coinbase.com/onramp/coinbase-hosted-onramp/generating-onramp-url"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          docs
+                        </a>
+                        ); this CLI does not embed that flow.
+                      </li>
+                      <li>
+                        <strong>Bridge or swap</strong> — bridge USDC or native assets to Base via
+                        Across, the official Base bridge, or a DEX aggregator, then send to the printed
+                        address.
+                      </li>
+                    </ul>
+                    <p className="muted">
+                      Power flags: <code>--reuse</code>, <code>--testnet</code>, <code>--json</code>,{" "}
+                      <code>--no-poll</code>, <code>--no-open</code>, <code>--gateway</code>,{" "}
+                      <code>--max-spend</code>. Run <code>npx -y @swarm-api/setup --help</code>.
+                    </p>
+                </div>
+
+                <div className="install-step">
+                  <div className="step-num">3</div>
+                  <div className="step-body">
+                    <p className="step-title">Merge MCP config &amp; restart the host app.</p>
+                    <p className="muted">
+                      <strong>Claude Desktop:</strong>{" "}
+                      <code>~/Library/Application Support/Claude/claude_desktop_config.json</code>{" "}
+                      (macOS) or <code>%APPDATA%\Claude\</code> (Windows). Paste{" "}
+                      <code>swarmapi</code> into <code>mcpServers</code>.
+                    </p>
+                    <p className="muted">
+                      <strong>Cursor:</strong> same block under <code>mcpServers</code> in{" "}
+                      <code>~/.cursor/mcp.json</code>.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="install-step">
+                  <div className="step-num">4</div>
+                  <div className="step-body">
+                    <p className="step-title">Prompt with tools enabled.</p>
+                    <p className="muted">
+                      <em>
+                        &quot;Pull the latest 8-K filings for AAPL and summarise material
+                        events.&quot;
+                      </em>
+                    </p>
+                    <p className="muted">
+                      Default MCP spend guardrails typically cap a single request near{" "}
+                      <strong>$0.10</strong> USDC unless you raise them — tune{" "}
+                      <code>SWARMAPI_MAX_SPEND_PER_REQUEST_ATOMIC</code> / host docs for your risk.
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-
-            <div className="install-step">
-              <div className="step-num">2</div>
-              <div className="step-body">
-                <p className="step-title">Merge into your MCP client config and restart.</p>
-                <p className="muted">
-                  <strong>Claude Desktop:</strong> open{" "}
-                  <code>~/Library/Application Support/Claude/claude_desktop_config.json</code> (macOS)
-                  or <code>%APPDATA%\Claude\</code> (Windows). Paste the <code>swarmapi</code> block
-                  from <code>~/.swarmapi/claude-desktop.json</code> into <code>mcpServers</code>.
-                </p>
-                <p className="muted">
-                  <strong>Cursor:</strong> add the same <code>mcpServers.swarmapi</code> object under{" "}
-                  <code>mcpServers</code> in <code>~/.cursor/mcp.json</code> (see{" "}
-                  <a href={NPM_URL} target="_blank" rel="noreferrer">
-                    npm readme
-                  </a>
-                  ).
-                </p>
-                <p className="muted">Restart the app so it picks up the new server.</p>
-              </div>
-            </div>
-
-            <div className="install-step">
-              <div className="step-num">3</div>
-              <div className="step-body">
-                <p className="step-title">Ask Claude anything about a public company.</p>
-                <p className="muted">
-                  <em>"Pull the latest 8-K filings for AAPL and summarise the material events."</em>
-                </p>
-                <p className="muted">
-                  Claude chains the right tools — <code>resolve_company</code> →{" "}
-                  <code>list_filings</code> → <code>extract_filing</code> — and pays per call.
-                  Default budget cap is $0.10 per request; agent refuses to sign anything above
-                  that.
-                </p>
-              </div>
-            </div>
-
-            <h3 className="alt-heading">Or use the SDK directly</h3>
-            <pre className="code">{`import { createAgentClient } from "@swarm-api/sdk";
-
-const fetch = createAgentClient({
-  privateKey: process.env.AGENT_PRIVATE_KEY,
-  maxSpendPerRequest: 100_000n, // $0.10 cap
-});
-
-const res = await fetch(
-  "https://api.swarm-api.com/v1/companies/filings?id=0000320193"
-);
-const filings = (await res.json()).filings;`}</pre>
+            </details>
 
             <div className="cta-row install-ctas">
               <a href={MARKETPLACE_URL} className="btn btn-primary">
-                See the API catalog →
+                Marketplace →
               </a>
               <a href={SMITHERY_SERVER_URL} target="_blank" rel="noreferrer" className="btn">
-                Smithery listing
+                Smithery
               </a>
               <a href={NPM_SETUP_URL} target="_blank" rel="noreferrer" className="btn">
                 @swarm-api/setup
@@ -610,34 +859,7 @@ const filings = (await res.json()).filings;`}</pre>
         </div>
       </section>
 
-      <footer className="site">
-        <div className="container">
-          <div>
-            Built on <a href={WHITEPAPER_URL} target="_blank" rel="noreferrer">x402</a> ·
-            USDC settlement on Base mainnet · MIT license
-          </div>
-          <div className="links">
-            <a href={MARKETPLACE_URL}>Marketplace</a>
-            <a href={DASHBOARD_URL}>Dashboard</a>
-            <a href="/status">Status</a>
-            <a href={GITHUB_REPO_URL} target="_blank" rel="noreferrer">
-              GitHub
-            </a>
-            <a href={SMITHERY_SERVER_URL} target="_blank" rel="noreferrer">
-              Smithery
-            </a>
-            <a href={NPM_URL} target="_blank" rel="noreferrer">
-              npm
-            </a>
-            <a href={WHITEPAPER_URL} target="_blank" rel="noreferrer">
-              Whitepaper
-            </a>
-            <a href={X402_REPO_URL} target="_blank" rel="noreferrer">
-              x402 spec
-            </a>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

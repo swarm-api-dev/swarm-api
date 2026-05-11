@@ -1,13 +1,14 @@
 # SwarmApi
 
-> Pay-per-call commerce for AI agents. Nine production endpoints (SEC filings, real-time company news, insider trades, hiring signals, web search, GitHub health, package CVEs) settled per HTTP call in USDC on Base over the x402 protocol. No API keys, no contracts, no subscriptions. Designed for AI agents to discover, pay, and consume autonomously.
+> Structured JSON APIs for AI agents — SEC filings, news, hiring, web search, GitHub repo health, package CVEs — consumed via `@swarm-api/mcp` (Cursor, Claude Desktop, Continue) or `@swarm-api/sdk` over HTTPS. Each paid response settles in USDC on Base using HTTP 402 and x402 (EIP-3009 authorization). No vendor API keys or contracts; a funded Base wallet is the credential.
 
-SwarmApi is the first production marketplace built on the x402 protocol (the HTTP 402 + EIP-3009 USDC standard Coinbase shipped in 2025). An AI agent makes a normal HTTP request, the gateway responds `402 Payment Required` with payment terms, the SwarmApi SDK signs an EIP-3009 USDC authorization and retries with one extra header, and the gateway returns structured JSON. The whole protocol fits in three steps.
+SwarmApi is a live gateway at `https://api.swarm-api.com`. For MCP, omit `SWARMAPI_PRIVATE_KEY` to expose only free tools `gateway_ping` (`GET /health`) and `gateway_catalog` (`GET /v1/catalog`). With a key + USDC, nine paid tools mirror the HTTP routes. Flow: request → `402 Payment Required` + `Payment-Required` payload → sign authorization → retry → `200` JSON while settlement completes on-chain.
 
 Agents fund a wallet by sending USDC on Base (MetaMask, Coinbase withdraw-to-Base, Binance, Phantom, hardware wallets, corporate treasuries), buying on an exchange and withdrawing on Base, or bridging USDC from another chain. Coinbase Hosted Onramp card checkout uses a backend-generated sessionToken (CDP); `npx @swarm-api/setup` supports send-USDC and coinbase.com flows by default, and optional card checkout when the operator exposes `POST /v1/onramp/session` and the user sets `SWARMAPI_ONRAMP_PROXY_SECRET`. The Model Context Protocol server (`@swarm-api/mcp` on npm) exposes every endpoint as a tool callable by Claude Desktop, Cursor, Continue, or any MCP host.
 
 ## Quick start
 
+- [SwarmApi whitepaper](https://swarm-api.com/whitepaper): architecture & alignment with x402
 - [Install in 60 seconds](https://swarm-api.com/#install): `npx -y @swarm-api/setup`
 - [Smithery registry](https://smithery.ai/servers/swarm-api/swarmapi): hosted MCP install for supported clients
 - [Setup CLI on npm](https://www.npmjs.com/package/@swarm-api/setup): `npm install @swarm-api/setup`
@@ -32,7 +33,8 @@ A complete due-diligence pass for one public company — every tool called once 
 
 ## Protocol
 
-- Standard: [x402 specification](https://www.x402.org/x402-whitepaper.pdf)
+- SwarmApi overview: [SwarmApi whitepaper](https://swarm-api.com/whitepaper)
+- x402 standard (canonical): [x402 specification PDF](https://www.x402.org/x402-whitepaper.pdf)
 - Reference implementation: [x402 GitHub repository](https://github.com/x402-foundation/x402)
 - Network: Base mainnet (chain id 8453)
 - Settlement asset: USDC (`0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`)
@@ -41,7 +43,7 @@ A complete due-diligence pass for one public company — every tool called once 
 
 ## Surfaces
 
-- [Landing](https://swarm-api.com): product overview, install flow, pricing.
+- [Landing](https://swarm-api.com): product overview, install flow, pricing, [whitepaper](https://swarm-api.com/whitepaper).
 - [Smithery](https://smithery.ai/servers/swarm-api/swarmapi): MCP registry listing and integrate flows.
 - [Marketplace](https://marketplace.swarm-api.com): live catalog of registered endpoints with JSON schema and code snippets.
 - [Dashboard](https://dashboard.swarm-api.com): real-time settled payment events, revenue, success rate.
