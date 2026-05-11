@@ -2,8 +2,34 @@
 
 export const SITE_URL = "https://swarm-api.com";
 export const GATEWAY_URL = "https://api.swarm-api.com";
-export const DASHBOARD_URL = process.env.DASHBOARD_URL ?? "http://localhost:3001";
-export const MARKETPLACE_URL = process.env.MARKETPLACE_URL ?? "http://localhost:3002";
+
+/** Use HTTPS satellites on Vercel; localhost only when not deployed there (local dev / CI). */
+function satelliteUrl(envKey: string, nextPublicKey: string, vercelDefault: string, localDefault: string): string {
+  const direct = process.env[envKey]?.trim();
+  if (direct) return direct;
+  const nextPublic = process.env[nextPublicKey]?.trim();
+  if (nextPublic) return nextPublic;
+  const onVercel = process.env.VERCEL === "1";
+  const vercelEnv = process.env.VERCEL_ENV;
+  if (onVercel && (vercelEnv === "production" || vercelEnv === "preview")) {
+    return vercelDefault;
+  }
+  return localDefault;
+}
+
+export const DASHBOARD_URL = satelliteUrl(
+  "DASHBOARD_URL",
+  "NEXT_PUBLIC_DASHBOARD_URL",
+  "https://dashboard.swarm-api.com",
+  "http://localhost:3001",
+);
+
+export const MARKETPLACE_URL = satelliteUrl(
+  "MARKETPLACE_URL",
+  "NEXT_PUBLIC_MARKETPLACE_URL",
+  "https://marketplace.swarm-api.com",
+  "http://localhost:3002",
+);
 
 /** SwarmApi product whitepaper (this site). */
 export const SWARMAPI_WHITEPAPER_HREF = "/whitepaper";
