@@ -4,7 +4,17 @@ Smithery checks **DNS TXT** on the **apex host** of your homepage and scans the 
 
 ## 1. TXT record (apex `swarm-api.com`)
 
-Add at your **DNS provider** (where `swarm-api.com` nameservers point — e.g. Cloudflare, Namecheap, Route 53, or **Vercel** if the domain uses Vercel DNS):
+**Added on Vercel DNS** for the apex (`@`): record id `rec_bbfdfccd403acc9e625e8092`, value `smithery-verification=606bb92272e01bd82c07ff31023b13c3b8f3ea50c78702b3c221a7844299337f`. Re-run the check on Smithery after TTL/propagation (often within minutes).
+
+To reproduce or fix on **Vercel-managed DNS**:
+
+```bash
+npx vercel dns add swarm-api.com @ TXT "smithery-verification=606bb92272e01bd82c07ff31023b13c3b8f3ea50c78702b3c221a7844299337f"
+```
+
+(Use the exact string Smithery gives you if they rotate verification.)
+
+If DNS ever moves off Vercel, add the same TXT at your provider:
 
 | Field | Value |
 | --- | --- |
@@ -13,8 +23,6 @@ Add at your **DNS provider** (where `swarm-api.com` nameservers point — e.g. C
 | **Content / Value** | `smithery-verification=606bb92272e01bd82c07ff31023b13c3b8f3ea50c78702b3c221a7844299337f` |
 
 Keep existing TXT records (SPF, etc.). This is an **additional** TXT value.
-
-DNS propagation can take a few minutes to hours. Re-run the check on Smithery after TTL expires.
 
 ## 2. Homepage & README backlink
 
