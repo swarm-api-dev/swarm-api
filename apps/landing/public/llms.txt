@@ -4,7 +4,7 @@
 
 SwarmApi is the first production marketplace built on the x402 protocol (the HTTP 402 + EIP-3009 USDC standard Coinbase shipped in 2025). An AI agent makes a normal HTTP request, the gateway responds `402 Payment Required` with payment terms, the SwarmApi SDK signs an EIP-3009 USDC authorization and retries with one extra header, and the gateway returns structured JSON. The whole protocol fits in three steps.
 
-Agents can fund a wallet with a credit card via Coinbase Onramp, by sending USDC from any existing wallet on Base (MetaMask, Coinbase, Binance, Phantom, hardware wallets, corporate treasuries), or by bridging USDC from another chain. The Model Context Protocol server (`@swarm-api/mcp` on npm) exposes every endpoint as a tool callable by Claude Desktop, Cursor, Continue, or any MCP host.
+Agents fund a wallet by sending USDC on Base (MetaMask, Coinbase withdraw-to-Base, Binance, Phantom, hardware wallets, corporate treasuries), buying on an exchange and withdrawing on Base, or bridging USDC from another chain. Coinbase Hosted Onramp card checkout uses a backend-generated sessionToken (CDP); `npx @swarm-api/setup` supports send-USDC and coinbase.com flows by default, and optional card checkout when the operator exposes `POST /v1/onramp/session` and the user sets `SWARMAPI_ONRAMP_PROXY_SECRET`. The Model Context Protocol server (`@swarm-api/mcp` on npm) exposes every endpoint as a tool callable by Claude Desktop, Cursor, Continue, or any MCP host.
 
 ## Quick start
 

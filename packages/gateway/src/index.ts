@@ -6,7 +6,8 @@ import rateLimit from "express-rate-limit";
 import { paymentMiddleware, x402ResourceServer } from "@x402/express";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { HTTPFacilitatorClient, type RoutesConfig } from "@x402/core/server";
-import { createCdpAuthHeaders } from "./cdp-auth";
+import { createCdpAuthHeaders, timingSafeStringEqual } from "./cdp-auth";
+import { createCoinbaseOnrampSession } from "./onramp-session";
 import { createDb, ensureSchema, endpoints, payments, upsertEndpoint } from "@swarmapi/db";
 import { desc, sql } from "drizzle-orm";
 import {
@@ -67,6 +68,8 @@ const CDP_API_KEY_NAME = process.env.CDP_API_KEY_NAME ?? "";
 const CDP_API_KEY_SECRET = process.env.CDP_API_KEY_SECRET ?? "";
 
 const cdpCredsAvailable = Boolean(CDP_API_KEY_NAME && CDP_API_KEY_SECRET);
+const SWARMAPI_ONRAMP_PROXY_SECRET = process.env.SWARMAPI_ONRAMP_PROXY_SECRET ?? "";
+const onrampSessionRouteEnabled = Boolean(SWARMAPI_ONRAMP_PROXY_SECRET && cdpCredsAvailable);
 let resolvedFacilitatorUrl = process.env.FACILITATOR_URL ?? PROFILE_CFG.facilitator;
 let facilitatorAuth: ReturnType<typeof createCdpAuthHeaders> | undefined;
 
@@ -89,6 +92,12 @@ if (resolvedFacilitatorUrl.includes("api.cdp.coinbase.com")) {
         `verify/settle/supported calls WILL fail until CDP_API_KEY_NAME and CDP_API_KEY_SECRET are set.`,
     );
   }
+}
+
+if (SWARMAPI_ONRAMP_PROXY_SECRET && !cdpCredsAvailable) {
+  console.warn(
+    "[gateway] SWARMAPI_ONRAMP_PROXY_SECRET is set but CDP_API_KEY_NAME / CDP_API_KEY_SECRET are unset — /v1/onramp/session disabled.",
+  );
 }
 
 const FACILITATOR_URL = resolvedFacilitatorUrl;
@@ -324,10 +333,13 @@ app.use(express.json({ limit: "32kb" }));
 // they need CORS for the cross-origin fetches. The paid /v1/companies/... and
 // /v1/filings/... endpoints don't need CORS because x402 clients are
 // non-browser HTTP clients.
-app.use((_req, res, next) => {
+app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
   next();
 });
 
@@ -346,6 +358,13 @@ const publicLimiter = rateLimit({
   standardHeaders: "draft-7",
   legacyHeaders: false,
   message: { error: "Too many requests. Limit: 120 req/min." },
+});
+const onrampSessionLimiter = rateLimit({
+  windowMs: 60_000,
+  limit: 15,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: { error: "Too many requests. Limit: 15 onramp sessions/min per IP." },
 });
 const healthLimiter = rateLimit({
   windowMs: 60_000,
@@ -392,6 +411,32 @@ app.get("/v1/catalog", publicLimiter, (_req: Request, res: Response) => {
   const rows = db.select().from(endpoints).all();
   res.json({ count: rows.length, endpoints: rows });
 });
+
+if (onrampSessionRouteEnabled) {
+  app.post("/v1/onramp/session", onrampSessionLimiter, async (req: Request, res: Response) => {
+    const hdr = req.headers.authorization;
+    const bearer =
+      typeof hdr === "string" && hdr.startsWith("Bearer ") ? hdr.slice(7).trim() : "";
+    if (!timingSafeStringEqual(bearer, SWARMAPI_ONRAMP_PROXY_SECRET)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const payload = buildOnrampPayload(req);
+      const result = await createCoinbaseOnrampSession(
+        { name: CDP_API_KEY_NAME, secret: CDP_API_KEY_SECRET },
+        payload,
+      );
+      return res.status(201).json(result);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error("[gateway] /v1/onramp/session:", safeLog(msg));
+      const m = /^Coinbase Onramp API (\d{3}): /.exec(msg);
+      const upstream = m ? Number(m[1]) : 0;
+      const status = upstream >= 400 && upstream < 500 ? upstream : upstream >= 500 ? 502 : 400;
+      return res.status(status).json({ error: msg });
+    }
+  });
+}
 
 const paidRoutes: RoutesConfig = Object.fromEntries(
   ROUTES.map((r) => [
@@ -584,6 +629,93 @@ app.get("/health", healthLimiter, (_req: Request, res: Response) => {
   res.json({ ok: true });
 });
 
+/** Builds CDP Create Onramp Session body from JSON — only allow-listed keys are forwarded. */
+function buildOnrampPayload(req: Request): Record<string, unknown> {
+  const body = req.body;
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    throw new Error("Expected a JSON object body.");
+  }
+  const rec = body as Record<string, unknown>;
+  const destinationAddress =
+    typeof rec.destinationAddress === "string" ? rec.destinationAddress.trim() : "";
+  if (!/^0x[a-fA-F0-9]{40}$/.test(destinationAddress)) {
+    throw new Error("destinationAddress must be a 0x-prefixed 20-byte EVM address.");
+  }
+
+  const out: Record<string, unknown> = {
+    destinationAddress,
+    purchaseCurrency:
+      typeof rec.purchaseCurrency === "string" && rec.purchaseCurrency.trim().length > 0
+        ? rec.purchaseCurrency.trim()
+        : "USDC",
+    destinationNetwork:
+      typeof rec.destinationNetwork === "string" && rec.destinationNetwork.trim().length > 0
+        ? rec.destinationNetwork.trim()
+        : "base",
+  };
+
+  const paymentAmount = rec.paymentAmount;
+  const purchaseAmount = rec.purchaseAmount;
+  if (
+    paymentAmount !== undefined &&
+    paymentAmount !== null &&
+    purchaseAmount !== undefined &&
+    purchaseAmount !== null
+  ) {
+    throw new Error("Provide only one of paymentAmount (fiat) or purchaseAmount (crypto), not both.");
+  }
+  if (typeof paymentAmount === "string" && paymentAmount.trim().length > 0) {
+    out.paymentAmount = paymentAmount.trim();
+  }
+  if (typeof purchaseAmount === "string" && purchaseAmount.trim().length > 0) {
+    out.purchaseAmount = purchaseAmount.trim();
+  }
+
+  if (out.paymentAmount !== undefined || out.purchaseAmount !== undefined) {
+    if (typeof rec.paymentCurrency === "string" && rec.paymentCurrency.trim().length > 0) {
+      out.paymentCurrency = rec.paymentCurrency.trim();
+    } else {
+      out.paymentCurrency = "USD";
+    }
+  }
+
+  const optStringKeys = [
+    "paymentMethod",
+    "country",
+    "subdivision",
+    "redirectUrl",
+    "partnerUserRef",
+  ] as const;
+  for (const k of optStringKeys) {
+    const v = rec[k];
+    if (typeof v === "string" && v.trim().length > 0) {
+      let s = v.trim();
+      if (k === "partnerUserRef" && s.length > 49) {
+        s = s.slice(0, 49);
+      }
+      out[k] = s;
+    }
+  }
+
+  const xf = req.headers["x-forwarded-for"];
+  const forwarded =
+    typeof xf === "string"
+      ? xf
+          .split(",")[0]
+          ?.trim()
+          ?.replace(/^::ffff:/, "") ?? ""
+      : "";
+  const clientIpRaw =
+    typeof rec.clientIp === "string" && rec.clientIp.trim().length > 0
+      ? rec.clientIp.trim()
+      : forwarded || (typeof req.ip === "string" ? req.ip.replace(/^::ffff:/, "") : "");
+  if (clientIpRaw.length > 0) {
+    out.clientIp = clientIpRaw;
+  }
+
+  return out;
+}
+
 function upstreamFailure(res: Response, err: unknown) {
   if (err instanceof UpstreamError) {
     const status = err.status === 404 ? 404 : 502;
@@ -603,6 +735,9 @@ app.listen(PORT, () => {
   console.log(`[gateway] network:     ${NETWORK}`);
   console.log(`[gateway] payTo:       ${PAY_TO_ADDRESS}`);
   console.log(`[gateway] db:          ${DB_PATH}`);
+  if (onrampSessionRouteEnabled) {
+    console.log(`[gateway] onramp:      POST /v1/onramp/session  (Bearer proxy secret → CDP session URL)`);
+  }
   console.log(`[gateway] routes:`);
   for (const r of ROUTES) {
     console.log(`             ${r.method.padEnd(4)} ${r.resource}  (${r.priceLabel})`);

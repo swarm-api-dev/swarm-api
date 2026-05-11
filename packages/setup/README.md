@@ -1,14 +1,16 @@
 # @swarm-api/setup
 
-One-shot CLI for [SwarmApi](https://swarm-api.com). Generates **or imports** a Base wallet, optionally funds it via [Coinbase Onramp](https://www.coinbase.com/onramp), polls for the USDC deposit, and writes a ready-to-paste MCP config block for Claude Desktop, Cursor, Cline, Zed, or any other MCP client.
+One-shot CLI for [SwarmApi](https://swarm-api.com). Generates **or imports** a Base wallet, walks you through funding with **USDC on Base** (send from any wallet, withdraw from an exchange, or testnet faucet), polls for the deposit, and writes a ready-to-paste MCP config block for Claude Desktop, Cursor, Cline, Zed, or any other MCP client.
 
-The whole flow runs without any signups, API keys, or accounts. Just `npx` it.
+The whole flow runs without SwarmApi signups or API keys. Just `npx` it.
 
 ```bash
 npx -y @swarm-api/setup
 ```
 
 That's it. The CLI walks you through the rest.
+
+**Note:** Coinbase [Hosted Onramp](https://docs.cdp.coinbase.com/onramp/coinbase-hosted-onramp/generating-onramp-url) needs a **server-generated `sessionToken`**. This CLI never embeds CDP keys in the package. For **card checkout**, set **`SWARMAPI_ONRAMP_PROXY_SECRET`** and deploy **`POST /v1/onramp/session`** on your gateway (see SwarmApi gateway); the funding menu then offers **[2] Card checkout**. Otherwise use **send USDC on Base** or Coinbase **Withdraw → Base**.
 
 ---
 
@@ -27,13 +29,13 @@ The key is persisted **immediately after generation, before any network calls** 
 
 ## Flows
 
-### 1. Generate fresh + Onramp (default)
+### 1. Generate fresh + fund (default)
 
 ```bash
 npx -y @swarm-api/setup
 ```
 
-Generates a new Base wallet, opens Coinbase Onramp pre-filled for $5 USDC on Base, polls the wallet until the deposit lands, prints the MCP config block, and reminds you to back up the private key.
+Generates a new Base wallet, prompts for how to fund (send USDC on Base, optional link to coinbase.com, or skip), polls until USDC lands, prints the MCP config block, and reminds you to back up the private key.
 
 ### 2. Bring your own private key
 
@@ -45,7 +47,7 @@ echo -n "$YOUR_PRIVATE_KEY" | npx -y @swarm-api/setup --key-stdin
 npx -y @swarm-api/setup --key-file ~/.secrets/swarmapi-key.txt
 ```
 
-Imports an existing Base EOA. Skips Onramp (you presumably already funded it). Still polls for the USDC balance unless you pass `--no-poll`.
+Imports an existing Base EOA. You can still use the funding prompts or `--no-poll`. Still polls for the USDC balance unless you pass `--no-poll`.
 
 > `--key <hex>` and `--mnemonic "..."` still work for backwards compatibility but are **discouraged** — argv is visible to every process on the box via `ps aux` and is logged to shell history. The CLI prints a warning when you use them.
 
@@ -93,8 +95,8 @@ Skips every interactive prompt, generates a wallet, prints a single JSON object 
     --reuse                Reuse the wallet at ~/.swarmapi/wallet.json.
     --testnet              Use Base Sepolia instead of Base mainnet.
     --no-poll              Skip on-chain balance polling.
-    --no-open              Don't auto-open the browser.
-    --dry-run              Generate wallet + config, skip Onramp and polling.
+    --no-open              Don't auto-open the browser (faucet / coinbase.com).
+    --dry-run              Generate wallet + config, skip funding helpers and polling.
     --json                 Emit a single JSON object (no prompts).
     --gateway <url>        SwarmApi gateway URL (default: https://api.swarm-api.com).
     --max-spend <atomic>   Per-call USDC ceiling, atomic 6-dec USDC (default: 100000 = $0.10).
@@ -115,6 +117,17 @@ Environment fallbacks (used when the matching flag isn't passed):
 | --- | --- |
 | `SWARMAPI_GATEWAY_URL` | `--gateway` |
 | `SWARMAPI_MAX_SPEND_PER_REQUEST_ATOMIC` | `--max-spend` |
+
+Optional — card checkout when your gateway exposes `POST /v1/onramp/session`:
+
+| Env var | Purpose |
+| --- | --- |
+| `SWARMAPI_ONRAMP_PROXY_SECRET` | Bearer token sent to the gateway (required for menu **[2]**). Never commit. |
+| `SWARMAPI_ONRAMP_SESSION_URL` | Override session URL (default: `<SWARMAPI_GATEWAY_URL>/v1/onramp/session`). |
+| `SWARMAPI_ONRAMP_PAYMENT_AMOUNT` | Fiat preset (default `5.00`). |
+| `SWARMAPI_ONRAMP_PAYMENT_CURRENCY` | Default `USD`. |
+| `SWARMAPI_ONRAMP_PURCHASE_CURRENCY` | Default `USDC`. |
+| `SWARMAPI_ONRAMP_DESTINATION_NETWORK` | Default `base`. |
 
 ---
 

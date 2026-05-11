@@ -14,15 +14,20 @@ import open from "open";
 // Constants
 // ---------------------------------------------------------------------------
 
-const VERSION = "0.2.2";
-const CDP_PROJECT_ID = "ca67d8b0-2675-4286-b036-e090af3cc689";
+const VERSION = "0.2.4";
 const USDC_BASE_MAINNET = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" as const;
 const USDC_BASE_SEPOLIA = "0x036CbD53842c5426634e7929541eC2318f3dCF7e" as const;
 const DEFAULT_GATEWAY = "https://api.swarm-api.com";
 const DEFAULT_MAX_SPEND = "100000"; // $0.10 atomic USDC
 const POLL_INTERVAL_MS = 5_000;
 const POLL_HEARTBEAT_MS = 60_000; // print a "still waiting" line every minute
-const ONRAMP_PRESET_USD = 5;
+/** Coinbase Hosted Onramp now requires a JWT + session token from your backend — not a static URL. */
+const CDP_ONRAMP_SESSION_DOCS =
+  "https://docs.cdp.coinbase.com/onramp/coinbase-hosted-onramp/generating-onramp-url";
+
+function onrampProxyConfigured(): boolean {
+  return Boolean(process.env.SWARMAPI_ONRAMP_PROXY_SECRET?.trim());
+}
 
 const ERC20_BALANCE_ABI = [
   {
@@ -246,24 +251,19 @@ async function main() {
   let pollSkipped = false;
 
   if (!args.noPoll && !args.dryRun) {
-    const fundingChoice = wallet.imported ? "skip" : await promptFunding(args);
-    if (fundingChoice === "onramp") {
-      const url = buildOnrampUrl(wallet.address, args.testnet);
+    let fundingOpenUrl: string | null = null;
+    if (!wallet.imported) {
       if (!args.json) {
-        process.stdout.write("\nOpening Coinbase Onramp in your browser...\n");
-        process.stdout.write(`  ${url}\n`);
-      }
-      if (!args.noOpen) {
-        try {
-          await open(url);
-        } catch {
-          if (!args.json) process.stdout.write("  (could not auto-open browser — copy the URL above)\n");
+        fundingOpenUrl = await promptFundingChoice(args, wallet.address);
+        printFundingDetails(wallet.address, args.testnet);
+        if (fundingOpenUrl && !args.noOpen) {
+          process.stdout.write(`\nOpening in browser:\n  ${fundingOpenUrl}\n`);
+          try {
+            await open(fundingOpenUrl);
+          } catch {
+            process.stdout.write("  (could not auto-open browser — copy the URL above)\n");
+          }
         }
-      }
-    } else if (fundingChoice === "manual") {
-      if (!args.json) {
-        process.stdout.write("\nSend any amount of USDC on Base mainnet to:\n");
-        process.stdout.write(`  ${wallet.address}\n`);
       }
     }
 
@@ -448,45 +448,171 @@ function walletFromMnemonic(raw: string, source: ResolvedWallet["source"]): Reso
 }
 
 // ---------------------------------------------------------------------------
-// Funding prompt
+// Funding
 // ---------------------------------------------------------------------------
 
-async function promptFunding(args: Args): Promise<"onramp" | "manual" | "skip"> {
-  if (args.json) return "manual"; // no interactivity in JSON mode
+/** Returns a URL to open in the browser, or null. Handles exit(0) on "skip funding". */
+async function promptFundingChoice(args: Args, address: Address): Promise<string | null> {
+  if (args.json) return null;
 
-  const choice = await prompt(
-    "How would you like to fund the wallet?\n" +
-      "  [1] Buy USDC with card via Coinbase Onramp  (recommended)\n" +
-      "  [2] Send USDC from another wallet           (CLI will print the address)\n" +
-      "  [3] Skip — I'll fund it later               (use --reuse next time)\n" +
-      "\n> ",
-    "1",
-  );
-  if (choice === "2") return "manual";
-  if (choice === "3") {
-    if (!args.json) process.stdout.write("\nSkipping funding. Run again with --reuse once the wallet is funded.\n");
+  if (args.testnet) {
+    const raw = await prompt(
+      "Fund the wallet on Base Sepolia:\n" +
+        "  [1] Open Circle's USDC testnet faucet (browser)\n" +
+        "  [2] I'll send testnet USDC myself — address printed below\n" +
+        "  [3] Skip — I'll fund later (then run with --reuse)\n" +
+        "\n> ",
+      "1",
+    );
+    const choice = /^[123]$/.test(raw) ? raw : "1";
+    if (choice === "3") {
+      process.stdout.write("\nSkipping funding. Run again with --reuse once the wallet is funded.\n");
+      process.exit(0);
+    }
+    if (choice === "2") return null;
+    return `https://faucet.circle.com/?address=${encodeURIComponent(address)}&chain=base-sepolia`;
+  }
+
+  const card = onrampProxyConfigured();
+  const lines = [
+    "Fund the wallet on Base mainnet:",
+    "  [1] Send USDC on Base from any wallet or exchange  (recommended)",
+  ];
+  if (card) {
+    lines.push(
+      "  [2] Card checkout — Coinbase Onramp (session minted via gateway; SWARMAPI_ONRAMP_PROXY_SECRET)",
+    );
+    lines.push(
+      "  [3] Open coinbase.com — buy USDC there, then Withdraw/Send on Base to the address below",
+    );
+    lines.push("  [4] Skip — I'll fund later (then run with --reuse)");
+  } else {
+    lines.push(
+      "  [2] Open coinbase.com — buy USDC there, then Withdraw/Send on Base to the address below",
+    );
+    lines.push(
+      `      (For card in-widget set SWARMAPI_ONRAMP_PROXY_SECRET + gateway /v1/onramp/session — ${CDP_ONRAMP_SESSION_DOCS})`,
+    );
+    lines.push("  [3] Skip — I'll fund later (then run with --reuse)");
+  }
+  lines.push("\n> ");
+
+  const raw = await prompt(lines.join("\n"), "1");
+  const choice = card ? (/^[1-4]$/.test(raw) ? raw : "1") : (/^[1-3]$/.test(raw) ? raw : "1");
+
+  if ((card && choice === "4") || (!card && choice === "3")) {
+    process.stdout.write("\nSkipping funding. Run again with --reuse once the wallet is funded.\n");
     process.exit(0);
   }
-  return "onramp";
+  if (card && choice === "3") return "https://www.coinbase.com/";
+  if (!card && choice === "2") return "https://www.coinbase.com/";
+  if (card && choice === "2") return await fetchOnrampSessionUrl(args, address);
+  return null;
 }
 
-// ---------------------------------------------------------------------------
-// Onramp URL
-// ---------------------------------------------------------------------------
+/**
+ * POST to gateway /v1/onramp/session (or SWARMAPI_ONRAMP_SESSION_URL) with SWARMAPI_ONRAMP_PROXY_SECRET.
+ * Presets: SWARMAPI_ONRAMP_PAYMENT_AMOUNT (default 5.00), SWARMAPI_ONRAMP_PAYMENT_CURRENCY (default USD).
+ */
+async function fetchOnrampSessionUrl(args: Args, address: Address): Promise<string> {
+  const secret = process.env.SWARMAPI_ONRAMP_PROXY_SECRET?.trim();
+  if (!secret) die("SWARMAPI_ONRAMP_PROXY_SECRET is not set.");
 
-function buildOnrampUrl(address: Address, testnet: boolean): string {
-  if (testnet) {
-    return `https://faucet.circle.com/?address=${address}&chain=base-sepolia`;
+  const sessionEndpoint =
+    process.env.SWARMAPI_ONRAMP_SESSION_URL?.trim().replace(/\/$/, "") ??
+    `${args.gateway.replace(/\/$/, "")}/v1/onramp/session`;
+
+  const paymentAmount = process.env.SWARMAPI_ONRAMP_PAYMENT_AMOUNT?.trim() || "5.00";
+  const paymentCurrency = process.env.SWARMAPI_ONRAMP_PAYMENT_CURRENCY?.trim() || "USD";
+  const purchaseCurrency = process.env.SWARMAPI_ONRAMP_PURCHASE_CURRENCY?.trim() || "USDC";
+  const destinationNetwork = process.env.SWARMAPI_ONRAMP_DESTINATION_NETWORK?.trim() || "base";
+
+  process.stdout.write("\nRequesting Onramp session from gateway…\n");
+
+  let res: Response;
+  try {
+    res = await fetch(sessionEndpoint, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${secret}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        destinationAddress: address,
+        purchaseCurrency,
+        destinationNetwork,
+        paymentAmount,
+        paymentCurrency,
+      }),
+    });
+  } catch (err) {
+    die(
+      `Could not reach Onramp session endpoint (${sessionEndpoint}): ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
-  const destinationWallets = JSON.stringify([{ address, blockchains: ["base"], assets: ["USDC"] }]);
-  const params = new URLSearchParams({
-    appId: CDP_PROJECT_ID,
-    destinationWallets,
-    defaultAsset: "USDC",
-    defaultPaymentMethod: "CARD",
-    presetCryptoAmount: String(ONRAMP_PRESET_USD),
-  });
-  return `https://pay.coinbase.com/buy/select-asset?${params.toString()}`;
+
+  const text = await res.text();
+  let parsed: unknown;
+  try {
+    parsed = text.length > 0 ? JSON.parse(text) : {};
+  } catch {
+    die(`Gateway returned non-JSON (${res.status}): ${text.slice(0, 400)}`);
+  }
+
+  if (!res.ok) {
+    const errMsg =
+      typeof parsed === "object" &&
+      parsed !== null &&
+      "error" in parsed &&
+      typeof (parsed as { error: unknown }).error === "string"
+        ? (parsed as { error: string }).error
+        : text.slice(0, 400);
+    die(`Onramp session failed (${res.status}): ${errMsg}`);
+  }
+
+  const url =
+    typeof parsed === "object" &&
+    parsed !== null &&
+    "session" in parsed &&
+    typeof (parsed as { session: unknown }).session === "object" &&
+    (parsed as { session: { onrampUrl?: unknown } }).session !== null &&
+    typeof (parsed as { session: { onrampUrl?: unknown } }).session?.onrampUrl === "string"
+      ? (parsed as { session: { onrampUrl: string } }).session.onrampUrl
+      : null;
+
+  if (!url) die("Gateway JSON missing session.onrampUrl");
+  return url;
+}
+
+function printFundingDetails(address: Address, testnet: boolean): void {
+  const netLabel = testnet ? "Base Sepolia (testnet)" : "Base mainnet";
+  const usdc = testnet ? USDC_BASE_SEPOLIA : USDC_BASE_MAINNET;
+  const explorer = testnet
+    ? `https://sepolia.basescan.org/address/${address}`
+    : `https://basescan.org/address/${address}`;
+
+  process.stdout.write("\n── Wallet funding ─────────────────────────────────────────\n");
+  process.stdout.write(`Network:    ${netLabel}\n`);
+  process.stdout.write(`Address:    ${address}\n`);
+  process.stdout.write(`Token:      USDC\n`);
+  process.stdout.write(`Contract:   ${usdc}\n`);
+  process.stdout.write(`Explorer:   ${explorer}\n`);
+  if (!testnet) {
+    if (onrampProxyConfigured()) {
+      process.stdout.write(
+        `\nCard checkout: choose [2] at the funding prompt to open an Onramp URL from your gateway.\n` +
+          `(Requires operator deploy of POST /v1/onramp/session — ${CDP_ONRAMP_SESSION_DOCS})\n`,
+      );
+    } else {
+      process.stdout.write(
+        `\nCoinbase Hosted Onramp (card in widget) uses a server-generated sessionToken.\n` +
+          `Set SWARMAPI_ONRAMP_PROXY_SECRET (and deploy gateway /v1/onramp/session) for card in this CLI.\n` +
+          `See: ${CDP_ONRAMP_SESSION_DOCS}\n` +
+          `Easiest path without that: send USDC on Base from Coinbase (Withdraw → Base), MetaMask, or any exchange.\n`,
+      );
+    }
+  }
+  process.stdout.write("────────────────────────────────────────────────────────────\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -663,8 +789,9 @@ function printHelp(): void {
   process.stdout.write(
     `@swarm-api/setup v${VERSION}
 
-Interactive CLI that generates or imports a Base wallet, funds it via Coinbase
-Onramp, and writes an MCP config block for Claude Desktop / Cursor / Cline / Zed.
+Interactive CLI that generates or imports a Base wallet, walks through funding
+(USDC on Base — send from any wallet, Coinbase withdraw, or testnet faucet),
+and writes an MCP config block for Claude Desktop / Cursor / Cline / Zed.
 
 Usage:
   npx -y @swarm-api/setup [flags]
@@ -675,8 +802,8 @@ Flags:
       --reuse                Reuse the wallet at ~/.swarmapi/wallet.json (skip generation).
       --testnet              Use Base Sepolia instead of Base mainnet.
       --no-poll              Skip on-chain balance polling.
-      --no-open              Don't auto-open the browser for Coinbase Onramp.
-      --dry-run              Generate wallet + config, skip Onramp and polling.
+      --no-open              Don't auto-open the browser (faucet, Onramp URL, coinbase.com).
+      --dry-run              Generate wallet + config, skip funding helpers and polling.
       --json                 Emit a single JSON object on stdout (no prompts).
       --gateway <url>        SwarmApi gateway URL (default: https://api.swarm-api.com).
       --max-spend <atomic>   Per-call USDC ceiling in 6-decimal atomic units (default: 100000 = $0.10).
@@ -701,6 +828,14 @@ Examples:
 Environment fallbacks (used when matching flag is not set):
   SWARMAPI_GATEWAY_URL                  same as --gateway
   SWARMAPI_MAX_SPEND_PER_REQUEST_ATOMIC same as --max-spend
+
+Optional — Coinbase Onramp card checkout via your gateway (mainnet funding menu shows [2] when set):
+  SWARMAPI_ONRAMP_PROXY_SECRET        Bearer secret for POST .../v1/onramp/session (never commit).
+  SWARMAPI_ONRAMP_SESSION_URL         Full URL override (default: <SWARMAPI_GATEWAY_URL>/v1/onramp/session).
+  SWARMAPI_ONRAMP_PAYMENT_AMOUNT      Fiat preset for session (default: 5.00).
+  SWARMAPI_ONRAMP_PAYMENT_CURRENCY    Default USD.
+  SWARMAPI_ONRAMP_PURCHASE_CURRENCY   Default USDC.
+  SWARMAPI_ONRAMP_DESTINATION_NETWORK Default base.
 
 The wallet's private key is saved to ~/.swarmapi/wallet.json (chmod 600) IMMEDIATELY
 after generation, before any network activity, so Ctrl-C during polling is safe.

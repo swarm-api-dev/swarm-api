@@ -33,7 +33,7 @@ Browse the full catalog: <https://marketplace.swarm-api.com>
 
 You need:
 - An MCP-compatible client (Claude Desktop, Cursor, Continue, etc.).
-- A Base mainnet **EOA private key** (0x-prefixed, 32 bytes) funded with **USDC on Base**. Bridge or buy via Coinbase, Onramp, or any DEX. $5 of USDC pays for ~1,000 typical tool calls.
+- A Base mainnet **EOA private key** (0x-prefixed, 32 bytes) funded with **USDC on Base**. Send from any wallet, withdraw from an exchange on Base, bridge, or swap on a DEX. $5 of USDC pays for ~1,000 typical tool calls.
 
 ### Claude Desktop
 
@@ -119,7 +119,7 @@ You can generate a fresh Base EOA with our setup tool:
 npx @swarm-api/setup
 ```
 
-This walks you through key generation, funding via Coinbase Onramp, and dropping the Claude Desktop config block.
+This walks you through key generation, funding with USDC on Base (send or exchange withdraw), and dropping the Claude Desktop config block.
 
 ---
 

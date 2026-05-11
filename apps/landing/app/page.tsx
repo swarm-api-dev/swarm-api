@@ -69,7 +69,7 @@ function structuredData() {
           "Model Context Protocol server exposing SwarmApi's nine paid endpoints as tools for Claude Desktop, Cursor, Continue, and other MCP hosts.",
         url: NPM_URL,
         downloadUrl: NPM_URL,
-        softwareVersion: "0.1.1",
+        softwareVersion: "0.1.5",
         offers: {
           "@type": "Offer",
           price: "0.00",
@@ -119,7 +119,7 @@ function structuredData() {
             acceptedAnswer: {
               "@type": "Answer",
               text:
-                "Three options. (1) Buy USDC by card via the Coinbase Onramp flow the setup CLI opens. (2) Send USDC on Base from any wallet you already control - MetaMask, Coinbase, Binance, Phantom, hardware wallet, corporate treasury. (3) Bridge USDC from another chain to Base via Across, the official Base bridge, or any DEX aggregator. The CLI watches the address and continues automatically once the deposit confirms.",
+                "Three options. (1) Send USDC on Base from any wallet or exchange you already control — MetaMask, Coinbase withdraw-to-Base, Binance, Phantom, hardware wallet, corporate treasury. (2) Buy USDC on a retail app or exchange, then withdraw or send on Base to the address the setup CLI prints. (3) Bridge USDC from another chain to Base via Across, the official Base bridge, or any DEX aggregator. Coinbase Hosted Onramp card checkout needs your own CDP backend sessionToken — see Coinbase docs. The CLI watches the address and continues automatically once the deposit confirms.",
             },
           },
           {
@@ -423,8 +423,9 @@ export default async function LandingPage() {
           <div className="quickstart">
             <h2>Live in 60 seconds.</h2>
             <p>
-              Generate a Base wallet, fund it via Coinbase Onramp, write the Claude Desktop config —
-              one CLI, no exchange account, no API key signup. Then restart Claude and ask anything.
+              Generate a Base wallet, fund it with USDC on Base (send, exchange withdraw, or testnet
+              faucet), write the Claude Desktop config — one CLI, no SwarmApi API key signup. Then
+              restart Claude and ask anything.
             </p>
 
             <div className="install-step">
@@ -443,11 +444,11 @@ Wallet source:
 ✓ Wallet saved to ~/.swarmapi/wallet.json (chmod 600)
 
 How would you like to fund the wallet?
-  [1] Buy USDC with card via Coinbase Onramp   (recommended, $5 preset)
-  [2] Send USDC from another wallet            (any Base-compatible)
-  [3] Skip — I'll fund it later
+  [1] Send USDC on Base from any wallet or exchange  (recommended)
+  [2] Open coinbase.com — buy USDC there, then Withdraw/Send on Base
+  [3] Skip — I'll fund later (then run with --reuse)
 
-> 2
+> 1
 Send any amount of USDC on Base mainnet to:
   0xAB12…CD34
 
@@ -466,14 +467,23 @@ Polling Base mainnet for USDC balance (Ctrl-C is safe — wallet saved):
                 </p>
                 <ul className="fund-list">
                   <li>
-                    <strong>Card</strong> — Coinbase Onramp opens in your browser, pre-filled for
-                    $5 of USDC on Base. No exchange account, no API key. USDC lands directly in
-                    the wallet you just generated.
+                    <strong>Send on Base</strong> — the CLI prints your address and polls. Send USDC
+                    on Base from MetaMask, Coinbase (Withdraw → Base), Binance, Phantom, a corporate
+                    treasury, or a hardware wallet.
                   </li>
                   <li>
-                    <strong>Any wallet you already own</strong> — the CLI prints the address and
-                    polls. Send USDC on Base from MetaMask, Coinbase, Binance, Phantom, a corporate
-                    treasury, or a hardware wallet. Anything that signs a Base transfer works.
+                    <strong>Buy then withdraw</strong> — purchase USDC on Coinbase or another
+                    exchange and withdraw/send on Base to the printed address. Hosted card checkout
+                    in Coinbase&apos;s widget requires a CDP{" "}
+                    <code>sessionToken</code> from your backend (
+                    <a
+                      href="https://docs.cdp.coinbase.com/onramp/coinbase-hosted-onramp/generating-onramp-url"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      docs
+                    </a>
+                    ); this CLI does not embed that flow.
                   </li>
                   <li>
                     <strong>Bridge or swap</strong> — already hold ETH or USDC on another chain?
