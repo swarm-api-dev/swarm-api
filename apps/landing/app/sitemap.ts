@@ -18,6 +18,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${SITE}/status`,
+      lastModified: NOW,
+      changeFrequency: "always",
+      priority: 0.5,
+    },
+    {
       url: "https://marketplace.swarm-api.com",
       lastModified: NOW,
       changeFrequency: "daily",

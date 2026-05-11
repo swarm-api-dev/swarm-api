@@ -170,6 +170,7 @@ export default async function LandingPage() {
           <nav className="site-nav">
             <a href={MARKETPLACE_URL}>Marketplace</a>
             <a href={DASHBOARD_URL}>Dashboard</a>
+            <a href="/status">Status</a>
             <a href={NPM_URL} target="_blank" rel="noreferrer">
               npm
             </a>
@@ -556,6 +557,7 @@ const filings = (await res.json()).filings;`}</pre>
           <div className="links">
             <a href={MARKETPLACE_URL}>Marketplace</a>
             <a href={DASHBOARD_URL}>Dashboard</a>
+            <a href="/status">Status</a>
             <a href={NPM_URL} target="_blank" rel="noreferrer">
               npm
             </a>

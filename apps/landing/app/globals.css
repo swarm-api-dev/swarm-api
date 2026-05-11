@@ -956,3 +956,208 @@ footer .links {
     gap: 14px;
   }
 }
+
+/* ---------------------------------------------------------------------- */
+/* Status page                                                            */
+/* ---------------------------------------------------------------------- */
+.muted {
+  color: var(--muted);
+}
+
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex-shrink: 0;
+}
+.status-dot.status-operational,
+.status-dot.status-ok {
+  background: var(--green);
+  box-shadow: 0 0 0 4px rgba(94, 194, 122, 0.18);
+}
+.status-dot.status-degraded {
+  background: var(--orange);
+  box-shadow: 0 0 0 4px rgba(212, 175, 122, 0.18);
+}
+.status-dot.status-down {
+  background: var(--red);
+  box-shadow: 0 0 0 4px rgba(224, 125, 139, 0.18);
+}
+
+.status-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin-bottom: 32px;
+}
+.status-banner.status-operational {
+  border-color: rgba(94, 194, 122, 0.4);
+  background: rgba(94, 194, 122, 0.06);
+}
+.status-banner.status-degraded {
+  border-color: rgba(212, 175, 122, 0.4);
+  background: rgba(212, 175, 122, 0.06);
+}
+.status-banner.status-down {
+  border-color: rgba(224, 125, 139, 0.4);
+  background: rgba(224, 125, 139, 0.06);
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.status-card {
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+.status-card.status-down {
+  border-color: rgba(224, 125, 139, 0.4);
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.metric-card {
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.endpoint-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-soft);
+}
+.endpoint-row {
+  display: grid;
+  grid-template-columns: 14px 56px 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13.5px;
+}
+.endpoint-row:last-child {
+  border-bottom: none;
+}
+.endpoint-row.endpoint-down {
+  background: rgba(224, 125, 139, 0.04);
+}
+.endpoint-method {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+.endpoint-resource {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  font-size: 12.5px;
+  overflow-wrap: anywhere;
+}
+.endpoint-price {
+  font-variant-numeric: tabular-nums;
+  color: var(--green);
+  font-size: 12.5px;
+}
+.endpoint-meta {
+  font-size: 11.5px;
+}
+
+.status-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  min-width: 600px;
+}
+.status-table th,
+.status-table td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.status-table th {
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.02);
+}
+.status-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.status-table code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+}
+.badge-ok,
+.badge-fail {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.badge-ok {
+  background: rgba(94, 194, 122, 0.15);
+  color: var(--green);
+}
+.badge-fail {
+  background: rgba(224, 125, 139, 0.15);
+  color: var(--red);
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+@media (max-width: 900px) {
+  .status-grid,
+  .metric-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 520px) {
+  .endpoint-row {
+    grid-template-columns: 14px 1fr auto;
+    row-gap: 4px;
+  }
+  .endpoint-method {
+    grid-column: 2;
+  }
+  .endpoint-resource {
+    grid-column: 2 / 4;
+  }
+  .endpoint-price {
+    grid-column: 2;
+  }
+  .endpoint-meta {
+    grid-column: 2 / 4;
+  }
+}
