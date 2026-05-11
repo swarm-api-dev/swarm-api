@@ -23,8 +23,10 @@ const MARKETPLACE_URL = process.env.MARKETPLACE_URL ?? "http://localhost:3002";
 const WHITEPAPER_URL = "https://www.x402.org/x402-whitepaper.pdf";
 const X402_REPO_URL = "https://github.com/x402-foundation/x402";
 const NPM_URL = "https://www.npmjs.com/package/@swarm-api/mcp";
+const NPM_SETUP_URL = "https://www.npmjs.com/package/@swarm-api/setup";
+const NPM_SDK_URL = "https://www.npmjs.com/package/@swarm-api/sdk";
+const SMITHERY_SERVER_URL = "https://smithery.ai/servers/swarm-api/swarmapi";
 const GITHUB_REPO_URL = "https://github.com/swarm-api-dev/swarm-api";
-const GATEWAY_URL = "https://api.swarm-api.com";
 
 const TOOLS: ReadonlyArray<{ name: string; description: string; priceUsd: string }> = [
   { name: "resolve_company", description: "Resolve ticker, CIK, or company name to a canonical SEC record.", priceUsd: "0.002" },
@@ -47,7 +49,7 @@ function structuredData() {
         "@id": `${SITE_URL}#organization`,
         name: "SwarmApi",
         url: SITE_URL,
-        sameAs: [NPM_URL, GITHUB_REPO_URL, X402_REPO_URL],
+        sameAs: [NPM_URL, NPM_SETUP_URL, GITHUB_REPO_URL, SMITHERY_SERVER_URL, X402_REPO_URL],
         description:
           "Pay-per-call commerce platform for AI agents. Production endpoints settled in USDC on Base over the x402 protocol.",
       },
@@ -171,6 +173,12 @@ export default async function LandingPage() {
             <a href={MARKETPLACE_URL}>Marketplace</a>
             <a href={DASHBOARD_URL}>Dashboard</a>
             <a href="/status">Status</a>
+            <a href={GITHUB_REPO_URL} target="_blank" rel="noreferrer">
+              GitHub
+            </a>
+            <a href={SMITHERY_SERVER_URL} target="_blank" rel="noreferrer">
+              Smithery
+            </a>
             <a href={NPM_URL} target="_blank" rel="noreferrer">
               npm
             </a>
@@ -428,6 +436,29 @@ export default async function LandingPage() {
               restart Claude and ask anything.
             </p>
 
+            <div className="dist-grid" aria-label="Install and distribution links">
+              <a className="dist-card" href={SMITHERY_SERVER_URL} target="_blank" rel="noreferrer">
+                <span className="dist-label">Registry</span>
+                <strong className="dist-title">Smithery</strong>
+                <span className="dist-desc">Hosted MCP install for supported clients (Integrate tab).</span>
+              </a>
+              <a className="dist-card" href={NPM_URL} target="_blank" rel="noreferrer">
+                <span className="dist-label">Package</span>
+                <strong className="dist-title">@swarm-api/mcp</strong>
+                <span className="dist-desc">stdio MCP server — Cursor, Claude Desktop, Continue, …</span>
+              </a>
+              <a className="dist-card" href={NPM_SETUP_URL} target="_blank" rel="noreferrer">
+                <span className="dist-label">CLI</span>
+                <strong className="dist-title">@swarm-api/setup</strong>
+                <span className="dist-desc">Wallet, funding prompts, ready-to-paste MCP config.</span>
+              </a>
+              <a className="dist-card" href={GITHUB_REPO_URL} target="_blank" rel="noreferrer">
+                <span className="dist-label">Source</span>
+                <strong className="dist-title">GitHub</strong>
+                <span className="dist-desc">Monorepo, issues, and self-hosting the gateway.</span>
+              </a>
+            </div>
+
             <div className="install-step">
               <div className="step-num">1</div>
               <div className="step-body">
@@ -504,13 +535,22 @@ Polling Base mainnet for USDC balance (Ctrl-C is safe — wallet saved):
             <div className="install-step">
               <div className="step-num">2</div>
               <div className="step-body">
-                <p className="step-title">Merge into Claude Desktop config and restart.</p>
+                <p className="step-title">Merge into your MCP client config and restart.</p>
                 <p className="muted">
-                  Open <code>~/Library/Application Support/Claude/claude_desktop_config.json</code>{" "}
-                  (macOS) or <code>%APPDATA%\Claude\</code> (Windows). Paste the{" "}
-                  <code>swarmapi</code> block from <code>~/.swarmapi/claude-desktop.json</code> into{" "}
-                  <code>mcpServers</code>. Restart Claude.
+                  <strong>Claude Desktop:</strong> open{" "}
+                  <code>~/Library/Application Support/Claude/claude_desktop_config.json</code> (macOS)
+                  or <code>%APPDATA%\Claude\</code> (Windows). Paste the <code>swarmapi</code> block
+                  from <code>~/.swarmapi/claude-desktop.json</code> into <code>mcpServers</code>.
                 </p>
+                <p className="muted">
+                  <strong>Cursor:</strong> add the same <code>mcpServers.swarmapi</code> object under{" "}
+                  <code>mcpServers</code> in <code>~/.cursor/mcp.json</code> (see{" "}
+                  <a href={NPM_URL} target="_blank" rel="noreferrer">
+                    npm readme
+                  </a>
+                  ).
+                </p>
+                <p className="muted">Restart the app so it picks up the new server.</p>
               </div>
             </div>
 
@@ -547,8 +587,20 @@ const filings = (await res.json()).filings;`}</pre>
               <a href={MARKETPLACE_URL} className="btn btn-primary">
                 See the API catalog →
               </a>
+              <a href={SMITHERY_SERVER_URL} target="_blank" rel="noreferrer" className="btn">
+                Smithery listing
+              </a>
+              <a href={NPM_SETUP_URL} target="_blank" rel="noreferrer" className="btn">
+                @swarm-api/setup
+              </a>
               <a href={NPM_URL} target="_blank" rel="noreferrer" className="btn">
-                @swarm-api/mcp on npm
+                @swarm-api/mcp
+              </a>
+              <a href={NPM_SDK_URL} target="_blank" rel="noreferrer" className="btn">
+                @swarm-api/sdk
+              </a>
+              <a href={GITHUB_REPO_URL} target="_blank" rel="noreferrer" className="btn">
+                GitHub
               </a>
               <a href={X402_REPO_URL} target="_blank" rel="noreferrer" className="btn">
                 x402 spec
@@ -568,6 +620,12 @@ const filings = (await res.json()).filings;`}</pre>
             <a href={MARKETPLACE_URL}>Marketplace</a>
             <a href={DASHBOARD_URL}>Dashboard</a>
             <a href="/status">Status</a>
+            <a href={GITHUB_REPO_URL} target="_blank" rel="noreferrer">
+              GitHub
+            </a>
+            <a href={SMITHERY_SERVER_URL} target="_blank" rel="noreferrer">
+              Smithery
+            </a>
             <a href={NPM_URL} target="_blank" rel="noreferrer">
               npm
             </a>

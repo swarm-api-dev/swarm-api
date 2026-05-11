@@ -725,6 +725,52 @@ pre.config-block {
   justify-content: flex-start;
 }
 
+.dist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.dist-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  text-align: left;
+  padding: 18px 18px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: border-color 120ms, background 120ms;
+}
+
+.dist-card:hover {
+  border-color: #2c333d;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.dist-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.dist-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.dist-desc {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
 /* Footer */
 
 footer.site {

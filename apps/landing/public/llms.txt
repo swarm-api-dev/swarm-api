@@ -9,6 +9,8 @@ Agents fund a wallet by sending USDC on Base (MetaMask, Coinbase withdraw-to-Bas
 ## Quick start
 
 - [Install in 60 seconds](https://swarm-api.com/#install): `npx -y @swarm-api/setup`
+- [Smithery registry](https://smithery.ai/servers/swarm-api/swarmapi): hosted MCP install for supported clients
+- [Setup CLI on npm](https://www.npmjs.com/package/@swarm-api/setup): `npm install @swarm-api/setup`
 - [MCP package on npm](https://www.npmjs.com/package/@swarm-api/mcp): `npm install @swarm-api/mcp`
 - [SDK on npm](https://www.npmjs.com/package/@swarm-api/sdk): `npm install @swarm-api/sdk`
 
@@ -40,6 +42,7 @@ A complete due-diligence pass for one public company — every tool called once 
 ## Surfaces
 
 - [Landing](https://swarm-api.com): product overview, install flow, pricing.
+- [Smithery](https://smithery.ai/servers/swarm-api/swarmapi): MCP registry listing and integrate flows.
 - [Marketplace](https://marketplace.swarm-api.com): live catalog of registered endpoints with JSON schema and code snippets.
 - [Dashboard](https://dashboard.swarm-api.com): real-time settled payment events, revenue, success rate.
 - [Gateway API](https://api.swarm-api.com): the actual HTTP service that returns 402 and settles payments.

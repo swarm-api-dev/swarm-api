@@ -9,6 +9,10 @@ Works with **Claude Desktop**, **Cursor**, **Continue**, **Cline**, or any MCP-c
 
 Run **`npx @swarm-api/mcp --help`** (or `swarmapi-mcp --help`) for CLI usage — **no** `SWARMAPI_PRIVATE_KEY` needed for help/version only.
 
+### Smithery registry
+
+Browse installs and the hosted MCP URL from **[SwarmApi on Smithery](https://smithery.ai/servers/swarm-api/swarmapi)** (Integrate tab). For full control and reproducible versions, use **`npx -y @swarm-api/mcp`** as below.
+
 ---
 
 ## What you get

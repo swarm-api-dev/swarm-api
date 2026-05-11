@@ -2,6 +2,8 @@
 
 One-shot CLI for [SwarmApi](https://swarm-api.com). Generates **or imports** a Base wallet, walks you through funding with **USDC on Base** (send from any wallet, withdraw from an exchange, or testnet faucet), polls for the deposit, and writes a ready-to-paste MCP config block for Claude Desktop, Cursor, Cline, Zed, or any other MCP client.
 
+Also listed on **[Smithery](https://smithery.ai/servers/swarm-api/swarmapi)** alongside `@swarm-api/mcp`.
+
 The whole flow runs without SwarmApi signups or API keys. Just `npx` it.
 
 ```bash

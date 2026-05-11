@@ -2,6 +2,8 @@
 
 Fetch-style HTTP client for agents: handles **HTTP 402** payment challenges from [x402](https://github.com/x402-foundation/x402) gateways, signs EIP-3009 USDC authorizations on Base, and enforces a per-request spend ceiling.
 
+SwarmApi marketplace and MCP: [swarm-api.com](https://swarm-api.com) · [Smithery listing](https://smithery.ai/servers/swarm-api/swarmapi).
+
 ```ts
 import { createAgentClient } from "@swarm-api/sdk";
 
