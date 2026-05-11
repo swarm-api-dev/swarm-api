@@ -13,14 +13,14 @@ WORKDIR /app
 COPY . .
 
 # Installs all workspace deps. Triggers the root `prepare` hook which builds
-# @swarmapi/sdk so the gateway's transitive imports resolve cleanly.
+# @swarm-api/sdk so the gateway's transitive imports resolve cleanly.
 # better-sqlite3 builds its native binding here.
 RUN npm install --no-audit --no-fund
 
 # Build the gateway runtime chain. @swarmapi/{db,company-intel,gateway} each
 # declare "main": "dist/index.js" so they MUST be compiled before runtime.
 # The root `build` script (see package.json) is scoped to just these packages
-# plus @swarmapi/sdk, so we skip the three Next.js apps and any examples.
+# plus @swarm-api/sdk, so we skip the three Next.js apps and any examples.
 RUN npm run build
 
 ENV NODE_ENV=production

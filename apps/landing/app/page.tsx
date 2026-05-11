@@ -101,7 +101,7 @@ function structuredData() {
             acceptedAnswer: {
               "@type": "Answer",
               text:
-                "The agent makes a normal HTTP request. The gateway responds 402 Payment Required with payment terms. The @swarmapi/sdk signs an EIP-3009 USDC authorization off-chain and retries with one extra header. The gateway returns structured JSON and settles the USDC payment on Base mainnet.",
+                "The agent makes a normal HTTP request. The gateway responds 402 Payment Required with payment terms. The @swarm-api/sdk signs an EIP-3009 USDC authorization off-chain and retries with one extra header. The gateway returns structured JSON and settles the USDC payment on Base mainnet.",
             },
           },
           {
@@ -312,7 +312,7 @@ export default async function LandingPage() {
               <div className="num">3</div>
               <h3>SDK signs and retries</h3>
               <p>
-                @swarmapi/sdk signs the USDC authorization off-chain, retries with one header, gets
+                @swarm-api/sdk signs the USDC authorization off-chain, retries with one header, gets
                 the structured JSON back. The facilitator settles on-chain in the background.
               </p>
               <code>200 OK · structured JSON</code>
@@ -521,7 +521,7 @@ Polling Base mainnet for USDC balance (Ctrl-C is safe — wallet saved):
             </div>
 
             <h3 className="alt-heading">Or use the SDK directly</h3>
-            <pre className="code">{`import { createAgentClient } from "@swarmapi/sdk";
+            <pre className="code">{`import { createAgentClient } from "@swarm-api/sdk";
 
 const fetch = createAgentClient({
   privateKey: process.env.AGENT_PRIVATE_KEY,

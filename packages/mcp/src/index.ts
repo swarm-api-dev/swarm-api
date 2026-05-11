@@ -3,7 +3,7 @@ import "dotenv/config";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { BudgetExceededError, createAgentClient } from "@swarmapi/sdk";
+import { BudgetExceededError, createAgentClient } from "@swarm-api/sdk";
 
 const PRIVATE_KEY = process.env.SWARMAPI_PRIVATE_KEY ?? process.env.AGENT_PRIVATE_KEY;
 const GATEWAY_URL = process.env.SWARMAPI_GATEWAY_URL ?? "https://api.swarm-api.com";

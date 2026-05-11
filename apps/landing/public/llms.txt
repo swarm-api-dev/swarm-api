@@ -10,7 +10,7 @@ Agents can fund a wallet with a credit card via Coinbase Onramp, by sending USDC
 
 - [Install in 60 seconds](https://swarm-api.com/#install): `npx -y @swarm-api/setup`
 - [MCP package on npm](https://www.npmjs.com/package/@swarm-api/mcp): `npm install @swarm-api/mcp`
-- [SDK on npm](https://www.npmjs.com/package/@swarmapi/sdk): `npm install @swarmapi/sdk`
+- [SDK on npm](https://www.npmjs.com/package/@swarm-api/sdk): `npm install @swarm-api/sdk`
 
 ## Endpoints
 

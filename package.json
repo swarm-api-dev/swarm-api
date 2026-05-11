@@ -9,12 +9,12 @@
     "examples/*"
   ],
   "scripts": {
-    "build": "npm run build -w @swarmapi/sdk -w @swarmapi/db -w @swarmapi/company-intel -w @swarmapi/gateway --if-present",
-    "build:libs": "npm run build -w @swarmapi/sdk -w @swarm-api/mcp -w @swarm-api/setup --if-present",
+    "build": "npm run build -w @swarm-api/sdk -w @swarmapi/db -w @swarmapi/company-intel -w @swarmapi/gateway --if-present",
+    "build:libs": "npm run build -w @swarm-api/sdk -w @swarm-api/mcp -w @swarm-api/setup --if-present",
     "start": "node packages/gateway/dist/index.js",
     "dev": "npm run dev --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "prepare": "npm run build -w @swarmapi/sdk --if-present"
+    "prepare": "npm run build -w @swarm-api/sdk --if-present"
   },
   "devDependencies": {
     "typescript": "^5.6.3"

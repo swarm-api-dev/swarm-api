@@ -2,14 +2,14 @@
   "name": "@swarmapi/research-agent-example",
   "version": "0.0.0",
   "private": true,
-  "description": "Demo agent that calls the gateway via @swarmapi/sdk on Base Sepolia.",
+  "description": "Demo agent that calls the gateway via @swarm-api/sdk on Base Sepolia.",
   "type": "module",
   "scripts": {
     "start": "tsx src/index.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@swarmapi/sdk": "*",
+    "@swarm-api/sdk": "*",
     "@modelcontextprotocol/sdk": "^1.18.0",
     "dotenv": "^16.4.5"
   },

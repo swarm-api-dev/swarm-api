@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { createAgentClient } from "@swarmapi/sdk";
+import { createAgentClient } from "@swarm-api/sdk";
 
 const fetch = createAgentClient({
   privateKey: process.env.AGENT_PRIVATE_KEY as `0x${string}`,

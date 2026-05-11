@@ -235,7 +235,7 @@ async function phase5(endpoints) {
   try {
     mod = await import("../packages/sdk/dist/index.js");
   } catch {
-    process.stdout.write("  WARN  @swarmapi/sdk not built. Running `npm run build -w @swarmapi/sdk` would let you test paid calls.\n");
+    process.stdout.write("  WARN  @swarm-api/sdk not built. Running `npm run build -w @swarm-api/sdk` would let you test paid calls.\n");
     return;
   }
   const { createAgentClient } = mod;

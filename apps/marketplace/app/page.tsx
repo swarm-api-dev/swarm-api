@@ -19,7 +19,7 @@ function formatUsdc(atomic: string): string {
 function snippet(e: Endpoint): string {
   const url = `${e.gatewayUrl}${e.resource}`;
   const cap = (BigInt(e.priceAtomic) * 10n).toString();
-  return `import { createAgentClient } from "@swarmapi/sdk";
+  return `import { createAgentClient } from "@swarm-api/sdk";
 
 const fetch = createAgentClient({
   privateKey: process.env.AGENT_PRIVATE_KEY,
