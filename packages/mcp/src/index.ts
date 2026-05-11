@@ -1,9 +1,56 @@
 #!/usr/bin/env node
+import { readFileSync } from "node:fs";
 import "dotenv/config";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { BudgetExceededError, createAgentClient } from "@swarm-api/sdk";
+
+const CLI_ARGS = process.argv.slice(2);
+
+function pkgVersion(): string {
+  try {
+    const url = new URL("../package.json", import.meta.url);
+    const pkg = JSON.parse(readFileSync(url, "utf8")) as { version?: string };
+    return typeof pkg.version === "string" ? pkg.version : "0.0.0";
+  } catch {
+    return "0.0.0";
+  }
+}
+
+if (CLI_ARGS.some((a) => a === "--help" || a === "-h")) {
+  process.stdout.write(makeHelpText());
+  process.exit(0);
+}
+
+if (CLI_ARGS.some((a) => a === "--version" || a === "-v")) {
+  process.stdout.write(`swarmapi-mcp/${pkgVersion()}\n`);
+  process.exit(0);
+}
+
+function makeHelpText(): string {
+  return `SwarmApi MCP server — paid gateway tools over stdio (Model Context Protocol).
+
+Usage:
+  swarmapi-mcp              Start the server (needs SWARMAPI_PRIVATE_KEY).
+  swarmapi-mcp --help, -h   Show this message (no env required).
+  swarmapi-mcp --version    Print version (no env required).
+
+Environment (required to run the server):
+  SWARMAPI_PRIVATE_KEY     Base mainnet 0x… private key with USDC (signs EIP-3009 per call).
+  AGENT_PRIVATE_KEY        Alias for SWARMAPI_PRIVATE_KEY.
+
+Environment (optional):
+  SWARMAPI_GATEWAY_URL     Default: https://api.swarm-api.com
+  SWARMAPI_MAX_SPEND_PER_REQUEST_ATOMIC  Default: 100000 ($0.10 USDC, 6 decimals)
+
+Quick install:
+  npx -y @swarm-api/setup
+
+Web: https://swarm-api.com
+npm: https://www.npmjs.com/package/@swarm-api/mcp
+`;
+}
 
 const PRIVATE_KEY = process.env.SWARMAPI_PRIVATE_KEY ?? process.env.AGENT_PRIVATE_KEY;
 const GATEWAY_URL = process.env.SWARMAPI_GATEWAY_URL ?? "https://api.swarm-api.com";
@@ -23,7 +70,7 @@ const fetchPaid = createAgentClient({
 
 const server = new McpServer({
   name: "swarmapi",
-  version: "0.1.0",
+  version: pkgVersion(),
 });
 
 server.registerTool(

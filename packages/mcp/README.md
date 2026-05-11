@@ -7,6 +7,8 @@
 
 Works with **Claude Desktop**, **Cursor**, **Continue**, **Cline**, or any MCP-compatible client.
 
+Run **`npx @swarm-api/mcp --help`** (or `swarmapi-mcp --help`) for CLI usage — **no** `SWARMAPI_PRIVATE_KEY` needed for help/version only.
+
 ---
 
 ## What you get
