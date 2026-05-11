@@ -71,7 +71,7 @@ function structuredData() {
           "Model Context Protocol server exposing SwarmApi's nine paid endpoints as tools for Claude Desktop, Cursor, Continue, and other MCP hosts.",
         url: NPM_URL,
         downloadUrl: NPM_URL,
-        softwareVersion: "0.1.7",
+        softwareVersion: "0.1.8",
         offers: {
           "@type": "Offer",
           price: "0.00",

@@ -33,6 +33,8 @@ Two tools never charge USDC: **`gateway_ping`** (calls `GET /health`) and **`gat
 
 After confirming tools appear under MCP in Cursor, add a **`SWARMAPI_PRIVATE_KEY`** env entry (same shape as Claude Desktop) to unlock all nine paid tools.
 
+Cursor logs anything written to **stderr** from an MCP server as an **error**, even when it is informational. This package stays quiet by default; set **`SWARMAPI_MCP_VERBOSE=1`** only if you want a startup line on stderr.
+
 ---
 
 ## What you get
@@ -113,9 +115,10 @@ It speaks the standard MCP `stdio` transport, so any client that can spawn an st
 
 | Env var | Required | Default | Purpose |
 | --- | :---: | --- | --- |
-| `SWARMAPI_PRIVATE_KEY` | yes | — | Base mainnet EOA private key (0x-prefixed) with USDC balance. Also accepts `AGENT_PRIVATE_KEY`. |
+| `SWARMAPI_PRIVATE_KEY` | for paid tools | — | Base mainnet EOA private key (0x-prefixed) with USDC. Omit for **gateway_ping** / **gateway_catalog** only. Also accepts `AGENT_PRIVATE_KEY`. |
 | `SWARMAPI_GATEWAY_URL` | no | `https://api.swarm-api.com` | Override if you're self-hosting the gateway. |
 | `SWARMAPI_MAX_SPEND_PER_REQUEST_ATOMIC` | no | `100000` (= $0.10) | Per-call hard ceiling in atomic USDC units (6 decimals). Refuses any 402 challenge above this. |
+| `SWARMAPI_MCP_VERBOSE` | no | off | Set `1` or `true` to print one startup line on stderr (some MCP hosts label stderr as errors). |
 
 The hard spend cap protects you from buggy clients or runaway tool calls — the SDK throws `BudgetExceededError` before signing if the server asks for more than `SWARMAPI_MAX_SPEND_PER_REQUEST_ATOMIC`.
 

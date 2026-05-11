@@ -46,6 +46,7 @@ Environment (for paid tools — SEC, news, search, etc.):
 Environment (optional):
   SWARMAPI_GATEWAY_URL     Default: https://api.swarm-api.com
   SWARMAPI_MAX_SPEND_PER_REQUEST_ATOMIC  Default: 100000 ($0.10 USDC, 6 decimals)
+  SWARMAPI_MCP_VERBOSE     Set to 1 or true to log connection line on stderr (hosts like Cursor treat stderr as errors).
 
 Quick install:
   npx -y @swarm-api/setup
@@ -361,10 +362,7 @@ function parseBigIntEnv(raw: string | undefined, fallback: bigint): bigint {
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
-if (HAS_PAID_KEY) {
-  process.stderr.write(
-    `[swarmapi-mcp] connected. gateway=${GATEWAY_URL} maxSpend=${MAX_SPEND} atomic (free + paid tools)\n`,
-  );
-} else {
-  process.stderr.write(`[swarmapi-mcp] connected. gateway=${GATEWAY_URL} (free tools only)\n`);
+if (process.env.SWARMAPI_MCP_VERBOSE === "1" || process.env.SWARMAPI_MCP_VERBOSE === "true") {
+  const mode = HAS_PAID_KEY ? `free + paid tools; maxSpend=${MAX_SPEND} atomic` : "free tools only";
+  process.stderr.write(`[swarmapi-mcp] connected. gateway=${GATEWAY_URL} (${mode})\n`);
 }
