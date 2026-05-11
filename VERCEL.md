@@ -2,28 +2,51 @@
 
 Each Next.js app is a **separate Vercel project** (`swarm-api.com`, `marketplace.*`, `dashboard.*`).
 
-## Required settings (each project)
+## Root Directory (required)
 
-1. **Root Directory** — set to exactly one of:
-   - `apps/landing`
-   - `apps/marketplace`
-   - `apps/dashboard`  
+| Vercel project         | Root Directory must be |
+|------------------------|-------------------------|
+| `swarmapi-landing`     | `apps/landing`          |
+| `swarmapi-marketplace` | `apps/marketplace`      |
+| `swarmapi-dashboard`   | `apps/dashboard`        |
 
-   If Root Directory is left as **`.`** (repo root), Vercel will **not** read `apps/*/vercel.json` and will run the root `package.json` `build` script instead — that builds the gateway/SDK, **not** Next.js, and you get **“.next was not found”**.
+**Current checks (`vercel project inspect`):** landing must **not** use `.` — if it does, Vercel runs the repo-root `build` (gateway/SDK) instead of Next.js → **“.next was not found at /vercel/path0/.next”**.
 
-2. **Output Directory** — leave **empty**. Do not set `.next` manually for Next.js.
+Fix in the dashboard: **Project → Settings → General → Root Directory**.
 
-3. **Framework preset** — Next.js (auto-detected).
+### Fix landing via API (optional)
 
-The `vercel.json` in each app installs from the monorepo root when needed (`npm ci --prefix ../..`) and runs `npm run build` in that app so `.next` is created next to `next.config.mjs`.
+```bash
+export VERCEL_TOKEN="..."   # Account → Settings → Tokens
+
+curl -X PATCH "https://api.vercel.com/v9/projects/prj_GqVRCj4IkudVBY9eIFffoiYSKmLm" \
+  -H "Authorization: Bearer $VERCEL_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"rootDirectory":"apps/landing"}'
+```
+
+(Replace project ID after inspecting `swarmapi-landing`.)
+
+## Node.js
+
+Set **Node.js 22.x** under **Project → Settings → General** to align with root `package.json` `"engines": { "node": "22.x" }`.
+
+## Output Directory
+
+Leave **empty** (Next.js default). Do not point it at `.next` manually.
+
+## `vercel.json` (per app)
+
+`installCommand` runs `npm ci` at the repo root when the app folder has no lockfile (`npm ci --prefix ../..`), then `npm run build` runs in that app.
 
 ## CLI deploy
 
-From the app folder (after `vercel link`):
+Use the **repository root** (`x402/`), not `cd apps/marketplace`, when the Vercel **Root Directory** is already `apps/marketplace` or `apps/dashboard`. Otherwise the CLI doubles the path (`apps/marketplace/apps/marketplace`).
 
 ```bash
-cd apps/landing   # or marketplace / dashboard
+cd /path/to/x402
+npx vercel link --yes --project swarmapi-marketplace   # or swarmapi-dashboard / swarmapi-landing
 npx vercel deploy --prod --yes
 ```
 
-Or link once per project at the repo root *only if* the cloud project’s Root Directory already matches that app (see above).
+After **`swarmapi-landing`** Root Directory is fixed to `apps/landing`, use the same pattern from the repo root.
