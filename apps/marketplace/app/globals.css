@@ -5,7 +5,10 @@
   --text: #e6e8eb;
   --muted: #8b94a3;
   --green: #5ec27a;
+  --red: #e07d8b;
   --blue: #7ac3e8;
+  --orange: #d4af7a;
+  --purple: #c08aff;
   --accent-soft: rgba(94, 194, 122, 0.12);
 }
 
@@ -31,11 +34,17 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
   overflow-x: clip;
   max-width: 100vw;
+}
+
+::selection {
+  background: rgba(94, 194, 122, 0.28);
+  color: var(--text);
 }
 
 .container {
