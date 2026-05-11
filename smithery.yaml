@@ -1,4 +1,6 @@
 version: 1
+# NOTE: smithery.ai/new only publishes HTTPS MCP URLs. For stdio distribution use the MCPB
+# bundle in packages/swarmapi-smithery-bundle/ + `smithery mcp publish ./swarmapi.mcpb`.
 name: swarmapi
 displayName: SwarmApi
 description: Pay-per-call SEC filings, company news, insider transactions, jobs, web search, GitHub repo health, and package security via x402 (USDC on Base). 9 tools, ~$0.01 average cost, no API key or subscription.
