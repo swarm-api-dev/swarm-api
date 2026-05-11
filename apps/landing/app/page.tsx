@@ -249,7 +249,11 @@ export default async function LandingPage() {
                 <a href={GATEWAY_URL} target="_blank" rel="noreferrer">
                   api.swarm-api.com
                 </a>
-                . Protocol:{" "}
+                . Hosted MCP registry:{" "}
+                <a href={SMITHERY_SERVER_URL} target="_blank" rel="noreferrer">
+                  Smithery — swarm-api/swarmapi
+                </a>{" "}
+                (<span className="mono">{SMITHERY_SERVER_URL}</span>). Protocol:{" "}
                 <a href={X402_REPO_URL} target="_blank" rel="noreferrer">
                   x402
                 </a>

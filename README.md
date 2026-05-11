@@ -1,5 +1,7 @@
 # SwarmApi
 
+[![Smithery](https://smithery.ai/badge/swarm-api/swarmapi)](https://smithery.ai/servers/swarm-api/swarmapi)
+
 Pay-per-call APIs for AI agents: SEC filings, company news, insider trades, jobs, web search, GitHub health, and package CVEs. Each request is settled in **USDC on Base** via the **[x402](https://www.x402.org/)** protocol — no API keys or subscriptions.
 
 | Resource | URL |
